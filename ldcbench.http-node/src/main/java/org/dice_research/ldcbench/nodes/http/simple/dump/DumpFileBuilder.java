@@ -23,7 +23,14 @@ import org.dice_research.ldcbench.graph.Graph;
 import org.dice_research.ldcbench.nodes.http.simple.dump.comp.BrotliStreamFactory;
 import org.dice_research.ldcbench.nodes.http.simple.dump.comp.CompressionStreamFactory;
 import org.dice_research.ldcbench.nodes.http.simple.dump.comp.ReflectionBasedStreamFactory;
+import org.dice_research.ldcbench.nodes.utils.LangUtils;
 import org.dice_research.ldcbench.nodes.utils.TripleIterator;
+import org.rdfhdt.hdt.enums.RDFNotation;
+import org.rdfhdt.hdt.exceptions.NotFoundException;
+import org.rdfhdt.hdt.exceptions.ParserException;
+import org.rdfhdt.hdt.hdt.HDT;
+import org.rdfhdt.hdt.hdt.HDTManager;
+import org.rdfhdt.hdt.options.HDTSpecification;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -68,8 +75,12 @@ public class DumpFileBuilder {
     }
 
     public File build()
-            throws IOException, NoSuchMethodException, SecurityException, ReflectiveOperationException {
+            throws IOException, NoSuchMethodException, SecurityException, ReflectiveOperationException, ParserException, NotFoundException {
         try (OutputStream out = generateOutputStream()) {
+            if (lang.equals(LangUtils.HDT_LANG)) {
+                streamData(out, Lang.NT);
+                return convertToHDT(dumpFile, Lang.NT);
+            }
             streamData(out, lang);
         }
         return dumpFile;
@@ -95,11 +106,13 @@ public class DumpFileBuilder {
         return out;
     }
 
-    private void streamData(OutputStream out, Lang lang) {
+    private void streamData(OutputStream out, Lang lang) throws IOException {
         int datasetId = 0;
         StreamRDF writerStream = null;
+        
         try {
             writerStream = StreamRDFWriter.getWriterStream(out, lang);
+            
         } catch(RiotException e ) {
             if(e.getMessage().startsWith("No serialization for language")) {
                 LOGGER.warn("No serialization for language Lang: {}. Trying to write it from an in-memory model.", lang);
@@ -108,6 +121,7 @@ public class DumpFileBuilder {
                 throw e;
             }
         }
+        
         // The stream has been created
         if(writerStream != null) {
         writerStream.start();
@@ -123,10 +137,40 @@ public class DumpFileBuilder {
             datasetId++;
         }
         writerStream.finish();
+        
+        
+        LOGGER.info("writerStream: " + writerStream);
         }
     }
 
-    private void writeData(OutputStream out, Lang lang) {
+    /*
+     * Converts RDF file into HDT
+     * @param The method requires an RDF file
+     * @return The method returns the HDT file
+     */
+	private File convertToHDT(File rdfFile, Lang rdfFileLang) throws IOException, ParserException, NotFoundException {
+		String rdfInput = rdfFile.getAbsolutePath();
+		String baseURI = resourceUriTemplates[0].split("%s")[0];
+		RDFNotation inputLang = LangUtils.getRDFNotation(rdfFileLang);
+
+		File hdtTempFile = File.createTempFile("ldcbench", ".hdt");
+		try {
+		    HDT hdt = HDTManager.generateHDT(
+                    rdfInput,
+                    baseURI,
+                    inputLang,
+                    new HDTSpecification(),
+                    null
+		            );
+		    hdt.saveToHDT(hdtTempFile.getAbsolutePath(), null);
+		} catch (Exception e) {
+		    LOGGER.error("Failed converting "+ lang + " File to HDT. Returning " + lang + " RDF File.");
+		    return rdfFile;
+		}
+	    return hdtTempFile;
+	}
+
+	private void writeData(OutputStream out, Lang lang) {
         TripleIterator iterator;
         LOGGER.info("Domain ID: " + domainId);
         LOGGER.info("graph size: " + graphs.length);

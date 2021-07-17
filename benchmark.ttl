@@ -37,6 +37,7 @@
     :useN3Dumps,
     :useRdfXmlDumps,
     :useNtDumps,
+    :useHDTDumps,
     :graphVisualization,
     :triplesEvaluated,
     :numberOfDisallowedResources,
@@ -175,6 +176,13 @@
 :useNtDumps a hobbit:Parameter, hobbit:ConfigurableParameter;
   rdfs:label "Use NT dumps"@en;
   rdfs:comment "Whether HTTP dump nodes would include N-Triples serialization."@en;
+  rdfs:domain hobbit:Experiment, hobbit:Challenge;
+  rdfs:range xsd:boolean;
+  hobbit:defaultValue "true"^^xsd:boolean .
+  
+:useHDTDumps a hobbit:Parameter, hobbit:ConfigurableParameter;
+  rdfs:label "Use HDT dumps"@en;
+  rdfs:comment "Whether HTTP dump nodes would include HDT format for serialization."@en;
   rdfs:domain hobbit:Experiment, hobbit:Challenge;
   rdfs:range xsd:boolean;
   hobbit:defaultValue "true"^^xsd:boolean .
