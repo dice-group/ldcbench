@@ -31,6 +31,7 @@ public class LangUtils {
     public static List<Lang> getAllowedLangs(){
         Model model = ModelFactory.createDefaultModel();
         model.addLiteral(HOBBIT.Experiment, LDCBench.useTurtleDumps, true);
+        model.addLiteral(HOBBIT.Experiment, LDCBench.useJsonLdDumps, true);
         model.addLiteral(HOBBIT.Experiment, LDCBench.useN3Dumps, true);
         model.addLiteral(HOBBIT.Experiment, LDCBench.useRdfXmlDumps, true);
         model.addLiteral(HOBBIT.Experiment, LDCBench.useNtDumps, true);
@@ -58,6 +59,9 @@ public class LangUtils {
         }
         if (Boolean.parseBoolean(RdfHelper.getStringValue(benchmarkParamModel, null, LDCBench.useNtDumps))) {
             langlist.add(Lang.NT);
+        }
+        if (Boolean.parseBoolean(RdfHelper.getStringValue(benchmarkParamModel, null, LDCBench.useJsonLdDumps))) {
+            langlist.add(Lang.JSONLD);
         }
 
         return langlist;

@@ -19,11 +19,13 @@ experiments:New a hobbit:Experiment;
   :dereferencingHttpNodeWeight 1;
   :httpDumpNodeWeight 0;
   :useTurtleDumps "true"^^xsd:boolean;
+  :useJsonLdDumps "true"^^xsd:boolean;
   :useN3Dumps "true"^^xsd:boolean;
   :useRdfXmlDumps "true"^^xsd:boolean;
   :useNtDumps "true"^^xsd:boolean;
   :rdfaNodeWeight 1;
   :ckanNodeWeight 0.01;
+  :jsonldNodeWeight 1;
   :sparqlNodeWeight 0.01;
   :numberOfNodes 4;
   :averageNodeGraphDegree 2.

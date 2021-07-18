@@ -15,7 +15,7 @@
     "git.project-hobbit.eu:4567/ldcbench/ldcbench/ldcbench.eval-module",
     "git.project-hobbit.eu:4567/ldcbench/ldcbench/ldcbench.http-node",
     "git.project-hobbit.eu:4567/ldcbench/ldcbench/ldcbench.rdfa-gen",
-    "git.project-hobbit.eu:4567/ldcbench/ldcbench/ldcbench.rdfa-node",
+    "git.project-hobbit.eu:4567/ldcbench/ldcbench/ldcbench.html-embd-node",
     "git.project-hobbit.eu:4567/ldcbench/ldcbench/ldcbench.sparql-node",
     "git.project-hobbit.eu:4567/ldcbench/ldcbench/ldcbench.system";
   hobbit:version "v1.0"@en;
@@ -31,9 +31,11 @@
     :ckanNodeWeight,
     :sparqlNodeWeight,
     :rdfaNodeWeight,
+    :jsonldNodeWeight,
     :httpDumpNodeWeight,
     :httpDumpNodeCompressedRatio,
     :useTurtleDumps,
+    :useJsonLdDumps,
     :useN3Dumps,
     :useRdfXmlDumps,
     :useNtDumps,

@@ -51,6 +51,7 @@ public class LDCBench {
     public static final Property numberOfDisallowedResources = property("numberOfDisallowedResources");
     public static final Property ratioOfRequestedDisallowedResources = property("ratioOfRequestedDisallowedResources");
     public static final Property rdfaNodeWeight = property("rdfaNodeWeight");
+    public static final Property jsonldNodeWeight = property("jsonldNodeWeight");
     public static final Property resourceUsageOverTime = property("resourceUsageOverTime");
     public static final Property runtime = property("runtime");
     public static final Property seed = property("seed");
@@ -62,6 +63,7 @@ public class LDCBench {
     public static final Property useN3Dumps = property("useN3Dumps");
     public static final Property useNtDumps = property("useNtDumps");
     public static final Property useRdfXmlDumps = property("useRdfXmlDumps");
+    public static final Property useJsonLdDumps = property("useJsonLdDumps");
     public static final Property useTurtleDumps = property("useTurtleDumps");
     public static final Property microAverageCrawlDelayFulfillment = property("microAverageCrawlDelayFulfillment");
     public static final Property macroAverageCrawlDelayFulfillment = property("macroAverageCrawlDelayFulfillment");

@@ -55,6 +55,7 @@ import org.dice_research.ldcbench.benchmark.cloud.AbstractNodeManager;
 import org.dice_research.ldcbench.benchmark.cloud.CkanNodeManager;
 import org.dice_research.ldcbench.benchmark.cloud.DereferencingHttpNodeManager;
 import org.dice_research.ldcbench.benchmark.cloud.HttpDumpNodeManager;
+import org.dice_research.ldcbench.benchmark.cloud.JsonLdNodeManager;
 import org.dice_research.ldcbench.benchmark.cloud.NodeManager;
 import org.dice_research.ldcbench.benchmark.cloud.RDFaNodeManager;
 import org.dice_research.ldcbench.benchmark.cloud.SparqlNodeManager;
@@ -95,6 +96,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
         SparqlNodeManager.class,
         HttpDumpNodeManager.class,
         RDFaNodeManager.class,
+        JsonLdNodeManager.class,
     };
 
     private boolean sdk;
@@ -412,7 +414,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
         if (sdk) {
             Thread.sleep(2000);
         }
-        
+
         String accessUris[] = Arrays.stream(nodeMetadata).map(m -> m.getAccessUriTemplate()).toArray(String[]::new);
         String serializedAccessUris = Arrays.toString(accessUris);
         String resourceUris[] = Arrays.stream(nodeMetadata).map(m -> m.getResourceUriTemplate()).toArray(String[]::new);
@@ -433,7 +435,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
                         ApiConstants.ENV_EVAL_DATA_QUEUE_KEY + "=" + evalDataQueueName,
                         DataGenerator.ENV_DATAGENERATOR_EXCHANGE_KEY + "=" + dataGeneratorsExchange,
                         ApiConstants.ENV_COMPONENT_COUNT_KEY + "=" + componentCount,
-                        ApiConstants.ENV_COMPONENT_ID_KEY + "=" + componentId++, 
+                        ApiConstants.ENV_COMPONENT_ID_KEY + "=" + componentId++,
                         DataGenerator.ENV_ACCESS_URI_TEMPLATES_KEY + "=" + serializedAccessUris,
                         DataGenerator.ENV_RESOURCE_URI_TEMPLATES_KEY + "=" + serializedResourceUris,},
                         nodeManagers.get(i).getDataGeneratorEnvironment(averageRdfGraphDegree,

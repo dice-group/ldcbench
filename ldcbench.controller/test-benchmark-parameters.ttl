@@ -19,11 +19,13 @@ experiments:New a hobbit:Experiment;
   :dereferencingHttpNodeWeight 0;
   :httpDumpNodeWeight 1;
   :useTurtleDumps "true"^^xsd:boolean;
+  :useJsonLdDumps "true"^^xsd:boolean;
   :useN3Dumps "true"^^xsd:boolean;
   :useRdfXmlDumps "true"^^xsd:boolean;
   :useNtDumps "true"^^xsd:boolean;
   :rdfaNodeWeight 1;
   :ckanNodeWeight 0.01;
+  :jsonldNodeWeight 1;
   # FIXME if using SPARQL node:
   #
   #     ERROR [org.hobbit.sdk.utils.ComponentsExecutor] - <Error while running component SimpleSparqlComponent:>

@@ -5,7 +5,7 @@
   <parent>
     <groupId>org.dice_research</groupId>
     <artifactId>ldcbench</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.1</version>
     <relativePath>..</relativePath>
   </parent>
   <artifactId>ldcbench.parent</artifactId>
@@ -104,7 +104,12 @@
       </dependency>
       <dependency>
         <groupId>org.dice_research</groupId>
-        <artifactId>ldcbench.rdfa-node</artifactId>
+        <artifactId>ldcbench.jsonld-gen</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.dice_research</groupId>
+        <artifactId>ldcbench.html-embd-node</artifactId>
         <version>${project.version}</version>
       </dependency>
       <!-- ~~~~~~~~~~~~~~~~~~~ End LDCBench modules ~~~~~~~~~~~~~~~~~~~~~~ -->
@@ -203,7 +208,7 @@
         <artifactId>commons-compress</artifactId>
         <version>1.20</version>
       </dependency>
-      
+
       <!-- Spring Framework -->
       <dependency>
         <groupId>org.springframework</groupId>
@@ -310,7 +315,7 @@
             </execution>
           </executions>
         </plugin>
-        <!-- lock down plugins versions to avoid using Maven defaults (may 
+        <!-- lock down plugins versions to avoid using Maven defaults (may
           be moved to parent pom) -->
         <plugin>
           <artifactId>maven-clean-plugin</artifactId>

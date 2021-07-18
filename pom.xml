@@ -6,7 +6,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.dice_research</groupId>
   <artifactId>ldcbench</artifactId>
-  <version>1.0.0</version>
+  <version>1.0.1</version>
   <packaging>pom</packaging>
 
   <name>LDC-Bench</name>
@@ -50,7 +50,8 @@
     <module>ldcbench.nodes</module>
     <module>ldcbench.parent</module>
     <module>ldcbench.rdfa-gen</module>
-    <module>ldcbench.rdfa-node</module>
+    <module>ldcbench.jsonld-gen</module>
+    <module>ldcbench.html-embd-node</module>
     <module>ldcbench.sparql-node</module>
     <module>ldcbench.system</module>
   </modules>

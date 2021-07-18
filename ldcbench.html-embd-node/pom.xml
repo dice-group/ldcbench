@@ -10,7 +10,7 @@
     <version>1.0.1</version>
     <relativePath>../ldcbench.parent</relativePath>
   </parent>
-  <artifactId>ldcbench.system</artifactId>
+  <artifactId>ldcbench.html-embd-node</artifactId>
   <packaging>jar</packaging>
 
   <dependencies>
@@ -18,31 +18,17 @@
       <groupId>org.dice_research</groupId>
       <artifactId>ldcbench.api</artifactId>
     </dependency>
-    <!-- HOBBIT core library -->
     <dependency>
-      <groupId>org.hobbit</groupId>
-      <artifactId>core</artifactId>
-      <exclusions>
-        <exclusion>
-          <groupId>com.google.guava</groupId>
-          <artifactId>guava</artifactId>
-        </exclusion>
-      </exclusions>
+      <groupId>org.dice_research</groupId>
+      <artifactId>ldcbench.data-generator</artifactId>
     </dependency>
     <dependency>
-      <groupId>javax.json</groupId>
-      <artifactId>javax.json-api</artifactId>
-      <version>1.1.4</version>
+      <groupId>org.dice_research</groupId>
+      <artifactId>ldcbench.http-node</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.glassfish</groupId>
-      <artifactId>javax.json</artifactId>
-      <version>1.1.4</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.any23</groupId>
-      <artifactId>apache-any23-core</artifactId>
-      <version>2.4</version>
+      <groupId>org.dice_research</groupId>
+      <artifactId>ldcbench.rdfa-gen</artifactId>
     </dependency>
     <!-- ~~~~~~~~~~~~~~~~~~~ Logging ~~~~~~~~~~~~~~~~~~~~~~ -->
     <!-- slf4j: Logging API -->
@@ -56,6 +42,14 @@
       <artifactId>slf4j-log4j12</artifactId>
     </dependency>
     <!-- ~~~~~~~~~~~~~~~~~~~ End Logging ~~~~~~~~~~~~~~~~~~~~~~ -->
+    <!-- ~~~~~~~~~~~~~~~~~~~ Testing ~~~~~~~~~~~~~~~~~~~~~~ -->
+    <!-- JUnit -->
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <!-- ~~~~~~~~~~~~~~~~~~~ End Testing ~~~~~~~~~~~~~~~~~~~~~~ -->
   </dependencies>
 
   <build>
