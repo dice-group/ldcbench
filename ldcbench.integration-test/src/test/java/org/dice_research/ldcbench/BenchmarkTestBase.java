@@ -68,37 +68,58 @@ public class BenchmarkTestBase {
     private static final Logger LOGGER = LoggerFactory.getLogger(BenchmarkTestBase.class);
 
     public final EnvironmentVariables environmentVariables = new EnvironmentVariables();
-    private AbstractDockerizer rabbitMqDockerizer;
+    // private AbstractDockerizer rabbitMqDockerizer;
     private ComponentsExecutor componentsExecutor;
-    private CommandQueueListener commandQueueListener;
+    // private CommandQueueListener commandQueueListener;
 
-    BenchmarkDockerBuilder benchmarkBuilder;
-    DataGenDockerBuilder dataGeneratorBuilder;
-    SystemAdapterDockerBuilder systemAdapterBuilder;
-    EvalModuleDockerBuilder evalModuleBuilder;
-    SimpleHttpNodeBuilder httpNodeBuilder;
-    CkanNodeBuilder ckanNodeBuilder;
-    SparqlNodeBuilder sparqlNodeBuilder;
-    LDCBenchNodeBuilder rdfaNodeBuilder;
-    LDCBenchNodeBuilder rdfaGenBuilder;
+    protected BenchmarkDockerBuilder benchmarkBuilder;
+    protected DataGenDockerBuilder dataGeneratorBuilder;
+    protected SystemAdapterDockerBuilder systemAdapterBuilder;
+    protected EvalModuleDockerBuilder evalModuleBuilder;
+    protected SimpleHttpNodeBuilder httpNodeBuilder;
+    protected CkanNodeBuilder ckanNodeBuilder;
+    protected SparqlNodeBuilder sparqlNodeBuilder;
+    protected LDCBenchNodeBuilder rdfaNodeBuilder;
+    protected LDCBenchNodeBuilder rdfaGenBuilder;
 
     public void init(Boolean useCachedImage) throws Exception {
 
-        benchmarkBuilder = new BenchmarkDockerBuilder(new ExampleDockersBuilder(BenchmarkController.class, BENCHMARK_IMAGE_NAME).useCachedImage(useCachedImage));
-        dataGeneratorBuilder = new DataGenDockerBuilder(new ExampleDockersBuilder(DataGenerator.class, DATAGEN_IMAGE_NAME).useCachedImage(useCachedImage).addFileOrFolder("data"));
+        benchmarkBuilder = new BenchmarkDockerBuilder(
+                new ExampleDockersBuilder(BenchmarkController.class, BENCHMARK_IMAGE_NAME)
+                        .useCachedImage(useCachedImage));
+        dataGeneratorBuilder = new DataGenDockerBuilder(
+                new ExampleDockersBuilder(DataGenerator.class, DATAGEN_IMAGE_NAME).useCachedImage(useCachedImage)
+                        .addFileOrFolder("data"));
 
-        systemAdapterBuilder = new SystemAdapterDockerBuilder(new ExampleDockersBuilder(SystemAdapter.class, SYSTEM_IMAGE_NAME).useCachedImage(useCachedImage));
-        evalModuleBuilder = new EvalModuleDockerBuilder(new ExampleDockersBuilder(EvalModule.class, EVALMODULE_IMAGE_NAME).useCachedImage(useCachedImage));
+        systemAdapterBuilder = new SystemAdapterDockerBuilder(
+                new ExampleDockersBuilder(SystemAdapter.class, SYSTEM_IMAGE_NAME).useCachedImage(useCachedImage));
+        evalModuleBuilder = new EvalModuleDockerBuilder(
+                new ExampleDockersBuilder(EvalModule.class, EVALMODULE_IMAGE_NAME).useCachedImage(useCachedImage));
 
         // FIXME do not build node images as part of this project
-        httpNodeBuilder = new SimpleHttpNodeBuilder(new ExampleDockersBuilder(SimpleHttpServerComponent.class, HTTPNODE_IMAGE_NAME).useCachedImage(useCachedImage));
-        ckanNodeBuilder = new CkanNodeBuilder(new ExampleDockersBuilder(SimpleCkanComponent.class, CKANNODE_IMAGE_NAME).useCachedImage(useCachedImage));
-        sparqlNodeBuilder = new SparqlNodeBuilder(new ExampleDockersBuilder(SimpleSparqlComponent.class, SPARQLNODE_IMAGE_NAME).useCachedImage(useCachedImage));
-        rdfaNodeBuilder = new LDCBenchNodeBuilder(new ExampleDockersBuilder(SimpleRDFaComponent.class, RDFANODE_IMAGE_NAME).useCachedImage(useCachedImage)) {
-            @Override public String getName() { return RDFANODE_IMAGE_NAME; }
+        httpNodeBuilder = new SimpleHttpNodeBuilder(
+                new ExampleDockersBuilder(SimpleHttpServerComponent.class, HTTPNODE_IMAGE_NAME)
+                        .useCachedImage(useCachedImage));
+        ckanNodeBuilder = new CkanNodeBuilder(new ExampleDockersBuilder(SimpleCkanComponent.class, CKANNODE_IMAGE_NAME)
+                .useCachedImage(useCachedImage));
+        sparqlNodeBuilder = new SparqlNodeBuilder(
+                new ExampleDockersBuilder(SimpleSparqlComponent.class, SPARQLNODE_IMAGE_NAME)
+                        .useCachedImage(useCachedImage));
+        rdfaNodeBuilder = new LDCBenchNodeBuilder(
+                new ExampleDockersBuilder(SimpleRDFaComponent.class, RDFANODE_IMAGE_NAME)
+                        .useCachedImage(useCachedImage)) {
+            @Override
+            public String getName() {
+                return RDFANODE_IMAGE_NAME;
+            }
         };
-        rdfaGenBuilder = new LDCBenchNodeBuilder(new ExampleDockersBuilder(RDFaDataGenerator.class, RDFADATAGEN_IMAGE_NAME).useCachedImage(useCachedImage)) {
-            @Override public String getName() { return RDFADATAGEN_IMAGE_NAME; }
+        rdfaGenBuilder = new LDCBenchNodeBuilder(
+                new ExampleDockersBuilder(RDFaDataGenerator.class, RDFADATAGEN_IMAGE_NAME)
+                        .useCachedImage(useCachedImage)) {
+            @Override
+            public String getName() {
+                return RDFADATAGEN_IMAGE_NAME;
+            }
         };
 
 //        benchmarkBuilder = new BenchmarkDockerBuilder(new PullBasedDockersBuilder(BENCHMARK_IMAGE_NAME));
@@ -107,6 +128,7 @@ public class BenchmarkTestBase {
 
     }
 
+    @SuppressWarnings("resource")
     protected void executeBenchmark(Boolean dockerized) throws Exception {
         Model benchmarkParameters = createBenchmarkParameters();
         LOGGER.info("Benchmark parameters:\n{}", prettyModelString(benchmarkParameters));
@@ -114,26 +136,28 @@ public class BenchmarkTestBase {
         Model systemParameters = createSystemParameters();
         LOGGER.info("System parameters:\n{}", prettyModelString(systemParameters));
 
-        String[] benchmarkParamsStr = new String[]{
-            HOBBIT_EXPERIMENT_URI_KEY+"="+org.hobbit.vocab.HobbitExperiments.New.getURI(),
-            BENCHMARK_PARAMETERS_MODEL_KEY+"="+RabbitMQUtils.writeModel2String(ModelsHandler.createMergedParametersModel(benchmarkParameters, ModelsHandler.readModelFromFile("../benchmark.ttl"))),
-            RABBIT_MQ_HOST_NAME_KEY+"="+(dockerized ? "rabbit" : "localhost"),
-        };
-        String [] systemParamsStr = new String[]{
-            SYSTEM_PARAMETERS_MODEL_KEY+"="+RabbitMQUtils.writeModel2String(ModelsHandler.createMergedParametersModel(systemParameters, ModelsHandler.readModelFromFile("../system.ttl"))),
-            RABBIT_MQ_HOST_NAME_KEY+"="+(dockerized ? "rabbit" : "localhost"),
-        };
+        String[] benchmarkParamsStr = new String[] {
+                HOBBIT_EXPERIMENT_URI_KEY + "=" + org.hobbit.vocab.HobbitExperiments.New.getURI(),
+                BENCHMARK_PARAMETERS_MODEL_KEY + "="
+                        + RabbitMQUtils.writeModel2String(ModelsHandler.createMergedParametersModel(benchmarkParameters,
+                                ModelsHandler.readModelFromFile("../benchmark.ttl"))),
+                RABBIT_MQ_HOST_NAME_KEY + "=" + (dockerized ? "rabbit" : "localhost"), };
+        String[] systemParamsStr = new String[] {
+                SYSTEM_PARAMETERS_MODEL_KEY + "="
+                        + RabbitMQUtils.writeModel2String(ModelsHandler.createMergedParametersModel(systemParameters,
+                                ModelsHandler.readModelFromFile("../system.ttl"))),
+                RABBIT_MQ_HOST_NAME_KEY + "=" + (dockerized ? "rabbit" : "localhost"), };
 
         Boolean useCachedImages = true;
         init(useCachedImages);
 
-        rabbitMqDockerizer = RabbitMqDockerizer.builder().useCachedContainer().build();
+        AbstractDockerizer rabbitMqDockerizer = RabbitMqDockerizer.builder().useCachedContainer().build();
 
         environmentVariables.set(ApiConstants.ENV_SDK_KEY, "true");
         environmentVariables.set(ApiConstants.ENV_DOCKERIZED_KEY, dockerized.toString());
-        environmentVariables.set(RABBIT_MQ_HOST_NAME_KEY, "localhost"); // rabbit hostname for things running on the host directly
-        environmentVariables.set(HOBBIT_SESSION_ID_KEY, "session_"+String.valueOf(new Date().getTime()));
-
+        environmentVariables.set(RABBIT_MQ_HOST_NAME_KEY, "localhost"); // rabbit hostname for things running on the
+                                                                        // host directly
+        environmentVariables.set(HOBBIT_SESSION_ID_KEY, "session_" + String.valueOf(new Date().getTime()));
 
         Component benchmarkController = new BenchmarkController();
         Component dataGen = new DataGenerator();
@@ -145,7 +169,7 @@ public class BenchmarkTestBase {
         Component rdfaNode = new SimpleRDFaComponent();
         Component rdfaGen = new RDFaDataGenerator();
 
-        if(dockerized) {
+        if (dockerized) {
 
             benchmarkController = benchmarkBuilder.build();
             dataGen = dataGeneratorBuilder.build();
@@ -158,51 +182,60 @@ public class BenchmarkTestBase {
             rdfaGen = rdfaGenBuilder.build();
         }
 
-        commandQueueListener = new CommandQueueListener();
+        CommandQueueListener commandQueueListener = new CommandQueueListener();
         componentsExecutor = new ComponentsExecutor();
 
         rabbitMqDockerizer.run();
 
-
-        //comment the .systemAdapter(systemAdapter) line below to use the code for running from python
-        CommandReactionsBuilder commandReactionsBuilder = new CommandReactionsBuilder(componentsExecutor, commandQueueListener)
-                        .benchmarkController(benchmarkController).benchmarkControllerImageName(BENCHMARK_IMAGE_NAME)
-                        .dataGenerator(dataGen).dataGeneratorImageName(dataGeneratorBuilder.getImageName())
-                        .evalModule(evalModule).evalModuleImageName(evalModuleBuilder.getImageName())
-                        .systemAdapter(systemAdapter).systemAdapterImageName(SYSTEM_IMAGE_NAME)
-                        .customContainerImage(httpNode, HTTPNODE_IMAGE_NAME)
+        // comment the .systemAdapter(systemAdapter) line below to use the code for
+        // running from python
+        CommandReactionsBuilder commandReactionsBuilder = new CommandReactionsBuilder(componentsExecutor,
+                commandQueueListener).benchmarkController(benchmarkController)
+                        .benchmarkControllerImageName(BENCHMARK_IMAGE_NAME).dataGenerator(dataGen)
+                        .dataGeneratorImageName(dataGeneratorBuilder.getImageName()).evalModule(evalModule)
+                        .evalModuleImageName(evalModuleBuilder.getImageName()).systemAdapter(systemAdapter)
+                        .systemAdapterImageName(SYSTEM_IMAGE_NAME).customContainerImage(httpNode, HTTPNODE_IMAGE_NAME)
                         .customContainerImage(ckanNode, CKANNODE_IMAGE_NAME)
                         .customContainerImage(sparqlNode, SPARQLNODE_IMAGE_NAME)
                         .customContainerImage(rdfaNode, RDFANODE_IMAGE_NAME)
                         .customContainerImage(rdfaGen, RDFADATAGEN_IMAGE_NAME)
-                        //.customContainerImage(systemAdapter, DUMMY_SYSTEM_IMAGE_NAME)
-                ;
+        // .customContainerImage(systemAdapter, DUMMY_SYSTEM_IMAGE_NAME)
+        ;
 
-        commandQueueListener.setCommandReactions(
-                commandReactionsBuilder.containerCommandsReaction(), //comment this if you want to run containers on a platform instance (if the platform is running)
-                commandReactionsBuilder.benchmarkSignalsReaction()
-        );
+        commandQueueListener.setCommandReactions(commandReactionsBuilder.containerCommandsReaction(), // comment this if
+                                                                                                      // you want to run
+                                                                                                      // containers on a
+                                                                                                      // platform
+                                                                                                      // instance (if
+                                                                                                      // the platform is
+                                                                                                      // running)
+                commandReactionsBuilder.benchmarkSignalsReaction());
 
         componentsExecutor.submit(commandQueueListener);
         commandQueueListener.waitForInitialisation();
 
-        // Start components without sending command to queue. Components will be executed by SDK, not the running platform (if it is running)
+        // Start components without sending command to queue. Components will be
+        // executed by SDK, not the running platform (if it is running)
         String benchmarkContainerId = "benchmark";
         String systemContainerId = "system";
 
 //        componentsExecutor.submit(benchmarkController, benchmarkContainerId, new String[]{ HOBBIT_EXPERIMENT_URI_KEY+"="+EXPERIMENT_URI,  BENCHMARK_PARAMETERS_MODEL_KEY+"="+ createBenchmarkParameters() });
 //        componentsExecutor.submit(systemAdapter, systemContainerId, new String[]{ SYSTEM_PARAMETERS_MODEL_KEY+"="+ createSystemParameters() });
 
-        //Alternative. Start components via command queue (will be executed by the platform (if running))
-        benchmarkContainerId = commandQueueListener.createContainer(benchmarkBuilder.getImageName(), "benchmark", benchmarkParamsStr);
-        systemContainerId = commandQueueListener.createContainer(systemAdapterBuilder.getImageName(), "system" , systemParamsStr);
+        // Alternative. Start components via command queue (will be executed by the
+        // platform (if running))
+        benchmarkContainerId = commandQueueListener.createContainer(benchmarkBuilder.getImageName(), "benchmark",
+                benchmarkParamsStr);
+        systemContainerId = commandQueueListener.createContainer(systemAdapterBuilder.getImageName(), "system",
+                systemParamsStr);
 
         environmentVariables.set("BENCHMARK_CONTAINER_ID", benchmarkContainerId);
         environmentVariables.set("SYSTEM_CONTAINER_ID", systemContainerId);
 
         commandQueueListener.waitForTermination();
 
-        // FIXME: This allows the terminating components to successfully send things to RabbitMQ
+        // FIXME: This allows the terminating components to successfully send things to
+        // RabbitMQ
         Thread.sleep(10000);
 
         rabbitMqDockerizer.stop();
@@ -235,14 +268,19 @@ public class BenchmarkTestBase {
         double recall = Double.parseDouble(RdfHelper.getStringValue(resultModel, null, LDCBench.macroRecall));
         Assert.assertTrue("Macro-recall > 0", recall > 0);
 
-        int dereferencingHttpNodeWeight = Integer.parseInt(RdfHelper.getStringValue(benchmarkParameters, null, LDCBench.dereferencingHttpNodeWeight));
+        int dereferencingHttpNodeWeight = Integer
+                .parseInt(RdfHelper.getStringValue(benchmarkParameters, null, LDCBench.dereferencingHttpNodeWeight));
         if (dereferencingHttpNodeWeight > 0) {
-            double minAverageCrawlDelayFulfillment = Double.parseDouble(RdfHelper.getStringValue(resultModel, null, LDCBench.minAverageCrawlDelayFulfillment));
+            double minAverageCrawlDelayFulfillment = Double
+                    .parseDouble(RdfHelper.getStringValue(resultModel, null, LDCBench.minAverageCrawlDelayFulfillment));
             Assert.assertTrue("minAverageCrawlDelayFulfillment > 1", minAverageCrawlDelayFulfillment > 1);
             /*
-            double maxAverageCrawlDelayFulfillment = Double.parseDouble(RdfHelper.getStringValue(resultModel, null, LDCBench.maxAverageCrawlDelayFulfillment));
-            Assert.assertTrue("maxAverageCrawlDelayFulfillment < 1.5", maxAverageCrawlDelayFulfillment < 1.5);
-            */
+             * double maxAverageCrawlDelayFulfillment =
+             * Double.parseDouble(RdfHelper.getStringValue(resultModel, null,
+             * LDCBench.maxAverageCrawlDelayFulfillment));
+             * Assert.assertTrue("maxAverageCrawlDelayFulfillment < 1.5",
+             * maxAverageCrawlDelayFulfillment < 1.5);
+             */
         } else {
             LOGGER.info("Crawl-delay assertions skipped.");
         }

@@ -7,15 +7,11 @@
   <parent>
     <groupId>org.dice_research</groupId>
     <artifactId>ldcbench.parent</artifactId>
-    <version>1.0.0</version>
+    <version>1.1.0</version>
     <relativePath>../ldcbench.parent</relativePath>
   </parent>
   <artifactId>ldcbench.nodes</artifactId>
   <packaging>jar</packaging>
-
-  <properties>
-    <spring.version>5.1.4.RELEASE</spring.version>
-  </properties>
 
   <dependencies>
     <dependency>
@@ -35,20 +31,15 @@
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
     </dependency>
-    <!-- ~~~~~~~~~~~~~~~~~~~ Spring ~~~~~~~~~~~~~~~~~~~~~~ -->
+    <!-- ~~~~~~~~~~~~~~~~~~~ Spring ~~~~~~~~~~~~~~~~~~~~~~ 
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-core</artifactId>
-      <version>${spring.version}</version>
     </dependency>
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-webmvc</artifactId>
-      <version>${spring.version}</version>
-    </dependency>
-    <!-- SPRING Test <dependency> <groupId>org.springframework</groupId> 
-      <artifactId>spring-test</artifactId> <version>${spring.version}</version> 
-      <scope>test</scope> </dependency> -->
+    </dependency>-->
     <!-- ~~~~~~~~~~~~~~~~~~~ End Spring ~~~~~~~~~~~~~~~~~~~~~~ -->
     <!-- ~~~~~~~~~~~~~~~~~~~ Logging ~~~~~~~~~~~~~~~~~~~~~~ -->
     <!-- slf4j: Logging API -->

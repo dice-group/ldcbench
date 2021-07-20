@@ -1,10 +1,12 @@
 package org.dice_research.ldcbench.nodes.http.simple;
 
 import java.io.OutputStream;
-import java.util.stream.Collectors;
 import java.util.Set;
+import java.util.stream.Collectors;
+
 import org.simpleframework.http.Response;
-import org.springframework.http.MediaType;
+
+import com.google.common.net.MediaType;
 
 /**
  * A resource which provides robots.txt file

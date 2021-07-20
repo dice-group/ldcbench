@@ -13,8 +13,6 @@ import java.util.List;
 import java.util.Random;
 
 import org.apache.commons.io.IOUtils;
-import org.dice_research.ldcbench.nodes.http.simple.dump.comp.CompressionStreamFactory;
-import org.dice_research.ldcbench.nodes.http.simple.dump.comp.ReflectionBasedStreamFactory;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -41,7 +39,6 @@ public class ReflectionBasedStreamFactoryTest {
         data.add(new Object[] { "java.util.zip.GZIPOutputStream", "java.util.zip.GZIPInputStream" });
         data.add(new Object[] { "org.apache.commons.compress.compressors.bzip2.BZip2CompressorOutputStream",
                 "org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream" });
-
         return data;
     }
 

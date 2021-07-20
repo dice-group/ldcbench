@@ -35,6 +35,14 @@ import org.slf4j.LoggerFactory;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Consumer;
 
+/**
+ * Data generator of ORCA. It fulfills two main roles: either, it generates the
+ * node graph, i.e., the graph comprising the single nodes (= servers) of the
+ * synthetic cloud, or it generates the RDF graph for a single node.
+ * 
+ * @author Michael R&ouml;der (michael.roeder@uni-paderborn.de)
+ *
+ */
 public class DataGenerator extends AbstractDataGenerator {
     public static final String ENV_TYPE_KEY = "LDCBENCH_DATAGENERATOR_TYPE";
     public static final String ENV_NUMBER_OF_NODES_KEY = "LDCBENCH_DATAGENERATOR_NUMBER_OF_NODES";
@@ -48,34 +56,97 @@ public class DataGenerator extends AbstractDataGenerator {
     public static final String ENV_ACCESS_URI_TEMPLATES_KEY = "ACCESS_URI_TEMPLATES";
     public static final String ENV_RESOURCE_URI_TEMPLATES_KEY = "RESOURCE_URI_TEMPLATES";
 
+    /**
+     * Types of data generator instances.
+     * 
+     * @author Michael R&ouml;der (michael.roeder@uni-paderborn.de)
+     */
     public static enum Types {
         NODE_GRAPH_GENERATOR, RDF_GRAPH_GENERATOR
     };
 
+    /**
+     * Semaphore used to synchronize the data generators (i.e., the data generators
+     * waits until all other generators are ready as well).
+     */
     private Semaphore dataGeneratorsReady = new Semaphore(0);
+    /**
+     * Mutex used to check whether the node graph has been received.
+     */
     private Semaphore nodeGraphReceivedMutex = new Semaphore(0);
+    /**
+     * Mutex used to check whether the node graph has been processed.
+     */
     private Semaphore nodeGraphProcessedMutex = new Semaphore(0);
+    /**
+     * A map that stores the metadata of the single nodes in the node graph.
+     */
     private Map<Integer, GraphMetadata> rdfMetadata;
+    /**
+     * Semaphore used to ensure that all metadata of the target nodes of this graph
+     * have been received.
+     */
     private Semaphore targetMetadataReceivedSemaphore = new Semaphore(0);
-
+    /**
+     * Serializer class used to serialize graphs for transmission. TODO this should
+     * be received via dependency injection.
+     */
     protected static final Class<DumbSerializer> SERIALIZER_CLASS = DumbSerializer.class;
-
-    private Logger LOGGER;
-
+    /**
+     * Logger used for logging. It is created at runtime to add information about
+     * the data generator.
+     */
+    protected Logger LOGGER;
+    /**
+     * The ID of this generator within the node graph.
+     */
     private int generatorId = -1;
-
+    /**
+     * A generator of seed values to initialize random number generators.
+     */
     private SeedGenerator seedGenerator;
+    /**
+     * The type of this data generator.
+     */
     private Types type;
+    /**
+     * The number of nodes that should be generated.
+     */
     private int numberOfNodes;
+    /**
+     * The average degree of the nodes.
+     */
     private double avgDegree;
+    /**
+     * The number of edges that should be generated.
+     */
     private int numberOfEdges;
 
+    /**
+     * The channel that is used for communication.
+     */
     private Channel dataGeneratorsChannel;
+    /**
+     * The name of the exchange that is used by the data generators to communicate.
+     */
     private String dataGeneratorsExchange;
+    /**
+     * The queue name that is used to send the generated data to the target node.
+     */
     protected String dataQueueName;
+    /**
+     * The queue name that is used to send the generated data to the evaluation
+     * module.
+     */
     protected String evalDataQueueName;
 
+    /**
+     * The generator that is used to create the graph.
+     */
     private GraphGenerator generator;
+    /**
+     * The node graph comprising the single nodes of the synthetic web.
+     */
     private Graph nodeGraph;
 
     protected String accessUriTemplates[];
@@ -157,8 +228,7 @@ public class DataGenerator extends AbstractDataGenerator {
     protected void sendFinalGraph(Graph g) throws Exception {
         byte[] data = SerializationHelper.serialize(SERIALIZER_CLASS, g);
         String name = String.format("graph-%0" + (int) Math.ceil(Math.log10(getNumberOfGenerators() + 1)) + "d"
-                + ApiConstants.FILE_ENDING_GRAPH,
-                getNodeId());
+                + ApiConstants.FILE_ENDING_GRAPH, getNodeId());
 
         // TODO: Use RabbitMQ exchange to send the data (SimpleFileSender doesn't
         // support that)
@@ -171,6 +241,32 @@ public class DataGenerator extends AbstractDataGenerator {
                 SimpleFileSender dataSender = SimpleFileSender.create(outgoingDataQueuefactory, evalDataQueueName);) {
             dataSender.streamData(is, name);
         }
+    }
+
+    /**
+     * Factory method to create the {@link GraphGenerator} instance used to
+     * generated the node graph.
+     * 
+     * @return the {@link GraphGenerator} instance used to generated the node graph
+     */
+    protected GraphGenerator createNodeGraphGenerator() {
+        int[] nodetypes = Stream.of(EnvVariables.getString(ENV_NODETYPES_KEY).split(",")).mapToInt(Integer::parseInt)
+                .toArray();
+        boolean[] ishub = ArrayUtils.toPrimitive(Stream.of(EnvVariables.getString(ENV_ISHUB_KEY).split(","))
+                .map(Boolean::parseBoolean).toArray(Boolean[]::new));
+        int[][] typeconnectivity = Stream.of(EnvVariables.getString(ENV_TYPECONNECTIVITY_KEY).split(";"))
+                .map(s -> Stream.of(s.split(",")).mapToInt(Integer::parseInt).toArray()).toArray(int[][]::new);
+        return new RandomCloudGraph("Graph " + generatorId, nodetypes, 0, typeconnectivity);
+    }
+
+    /**
+     * Factory method to create the {@link GraphGenerator} instance used to
+     * generated the RDF graph.
+     * 
+     * @return the {@link GraphGenerator} instance used to generated the RDF graph
+     */
+    protected GraphGenerator createRDFGraphGenerator() {
+        return new RandomRDF("Graph " + generatorId);
     }
 
     @Override
@@ -220,16 +316,9 @@ public class DataGenerator extends AbstractDataGenerator {
         }
 
         if (type == Types.NODE_GRAPH_GENERATOR) {
-            int[] nodetypes = Stream.of(EnvVariables.getString(ENV_NODETYPES_KEY).split(","))
-                    .mapToInt(Integer::parseInt).toArray();
-            boolean[] ishub = ArrayUtils.toPrimitive(Stream.of(EnvVariables.getString(ENV_ISHUB_KEY).split(","))
-                    .map(Boolean::parseBoolean).toArray(Boolean[]::new));
-            int[][] typeconnectivity = Stream.of(EnvVariables.getString(ENV_TYPECONNECTIVITY_KEY).split(";"))
-                    .map(s -> Stream.of(s.split(",")).mapToInt(Integer::parseInt).toArray()).toArray(int[][]::new);
-
-            generator = new RandomCloudGraph("Graph " + generatorId, nodetypes, 0, typeconnectivity);
+            generator = createNodeGraphGenerator();
         } else {
-            generator = new RandomRDF("Graph " + generatorId);
+            generator = createRDFGraphGenerator();
         }
 
         GraphBuilder graph = new GrphBasedGraph();
@@ -320,6 +409,7 @@ public class DataGenerator extends AbstractDataGenerator {
 
     @Override
     protected void generateData() throws Exception {
+        // Nothing to do; everything is done within the init() method
     }
 
     @Override

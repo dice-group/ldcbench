@@ -1,0 +1,34 @@
+# Used at "mvn verify" which is run with "make test-benchmark-dockerized".
+
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix hobbit: <http://w3id.org/hobbit/vocab#> .
+@prefix experiments: <http://w3id.org/hobbit/experiments#>
+@prefix : <http://w3id.org/dice-research/orca/ontology#> .
+
+experiments:New a hobbit:Experiment;
+  :allNodesInSeed "true"^^xsd:boolean;
+  :seed 100;
+  :nodeSizeDeterminer :StaticNodeSize;
+  :averageTriplesPerNode 5;
+  :averageCrawlDelay 5;
+  :averageDisallowedRatio 0.5;
+  :averageRdfGraphDegree 2;
+  :httpDumpNodeCompressedRatio 0.5;
+  :dereferencingHttpNodeWeight 1;
+  :httpDumpNodeWeight 0;
+  :useTurtleDumps "true"^^xsd:boolean;
+  :useN3Dumps "true"^^xsd:boolean;
+  :useRdfXmlDumps "true"^^xsd:boolean;
+  :useNtDumps "true"^^xsd:boolean;
+  :rdfaNodeWeight 0;
+  :ckanNodeWeight 0;
+  :sparqlNodeWeight 0;
+  :numberOfNodes 4;
+  :dataset :LemmingTestDataset;
+  :averageNodeGraphDegree 2.
+
+:LemmingTestDataset a :LemmingDataset;
+	:lemmingDatasetDirectory "lemming/test";
+	rdfs:label "Test dataset"@en;
+	rdfs:comment "A simple dataset used for testing."@en .

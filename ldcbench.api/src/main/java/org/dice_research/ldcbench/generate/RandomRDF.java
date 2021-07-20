@@ -5,11 +5,7 @@
 package org.dice_research.ldcbench.generate;
 
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Random;
-import java.util.TreeSet;
-import java.util.stream.IntStream;
-//import it.unimi.dsi.util.XorShift1024StarRandom;
 
 import org.dice_research.ldcbench.graph.GraphBuilder;
 
@@ -165,14 +161,13 @@ protected int[] weightedSampleWithoutReplacement(int n, int m, int[] wt) {
 	 * @param N the number of nodes
 	 * @param degree the average degree of the nodes in the graph
 	 * @param seed the random seed to be able to reproduce the results.
-	 * @return the number of edges if successful and zero otherwise
 	 */
 		protected void getBarabasiRDF(int N, double degree, long seed, GraphBuilder builder) {
 			/* nodes are numbered from 1 to N */
 
 			int indexToEdgeList ;// index to edge list
-			long t0 = System.currentTimeMillis();
-			long ti0 = System.currentTimeMillis();
+//			long t0 = System.currentTimeMillis();
+//			long ti0 = System.currentTimeMillis();
 
 			int nE=(int) Math.ceil(N*degree);
 			int[] subj = new int[nE];
@@ -190,7 +185,7 @@ protected int[] weightedSampleWithoutReplacement(int n, int m, int[] wt) {
 			double biasedCoin=((m/2.0-1)/(m-1));
 			//long ts10k=0;
 			for (int i = m + 1; i <= N; i++) {
-				long ts1=System.currentTimeMillis();
+//				long ts1=System.currentTimeMillis();
 				int[] tmp = weightedSampleWithoutReplacement((i - 1), m, inDeg);// #new links
 		//		ts10k+=(System.currentTimeMillis()-ts1);
 
@@ -221,15 +216,15 @@ protected int[] weightedSampleWithoutReplacement(int n, int m, int[] wt) {
 				        biasedCoin=((m/2.0-1)/(m-1));
 				}
 
-				if (i % 10000 == 0) {
-					long ti1;
-					ti1= System.currentTimeMillis();
-					//ts10k=0;
-					ti0= System.currentTimeMillis();
-				}
+//				if (i % 10000 == 0) {
+//					long ti1;
+//					ti1= System.currentTimeMillis();
+//					//ts10k=0;
+//					ti0= System.currentTimeMillis();
+//				}
 			}
 
-			long t_barabasi = System.currentTimeMillis();
+//			long t_barabasi = System.currentTimeMillis();
 
 			int nEdges = indexToEdgeList;
 			int[] idRange=builder.addNodes(N);//Range
@@ -283,8 +278,8 @@ protected int[] weightedSampleWithoutReplacement(int n, int m, int[] wt) {
 	        /* uniform distribution for in/out typing*/
 
 			int indexToEdgeList ;// index to edge list
-			long t0 = System.currentTimeMillis();
-			long ti0 = System.currentTimeMillis();
+//			long t0 = System.currentTimeMillis();
+//			long ti0 = System.currentTimeMillis();
 
 			int nE=(int) Math.ceil(N*degree/2);//19/8/2019
 			int[] subj = new int[nE];
@@ -301,12 +296,12 @@ protected int[] weightedSampleWithoutReplacement(int n, int m, int[] wt) {
 			if (P1<=m ) P1 = m + 1;
 
 			
-			long ts10k=0;
+//			long ts10k=0;
 			int cntE=indexToEdgeList;
 			int i;
 			try {
 			for ( i = m + 1; i < N; i++) {
-				long ts1=System.currentTimeMillis();
+//				long ts1=System.currentTimeMillis();
 				int m1= 1+ generator.nextInt(2*m-1);
 				if(m1 >= i) m1=i-1;
 				//if(m1 > 2*m) m1=2*m;
@@ -322,12 +317,12 @@ protected int[] weightedSampleWithoutReplacement(int n, int m, int[] wt) {
 					    m = m + 1;//second part
 				}
 
-				if (i % 10000 == 0) {
-					long ti1;
-					ti1= System.currentTimeMillis();
-					ts10k=0;
-					ti0= System.currentTimeMillis();
-				}
+//				if (i % 10000 == 0) {
+//					long ti1;
+//					ti1= System.currentTimeMillis();
+//					ts10k=0;
+//					ti0= System.currentTimeMillis();
+//				}
 				//if(indexToEdgeList >= (nE-1)) break;
 			}
 			
@@ -342,7 +337,7 @@ protected int[] weightedSampleWithoutReplacement(int n, int m, int[] wt) {
 			   indexToEdgeList = getOneNodeLinks(i,mf,indexToEdgeList,subj,obj,inDeg);
 			}
 			
-			long t_barabasi = System.currentTimeMillis();
+//			long t_barabasi = System.currentTimeMillis();
 //            ##4/7/2019
 			if(i < (N-1) ) {
             	System.out.println("Actual number of nodes:" + i + " instead of: " + N );
@@ -360,7 +355,7 @@ protected int[] weightedSampleWithoutReplacement(int n, int m, int[] wt) {
 			int[] entranceNodes= {0};
 			builder.setEntranceNodes(entranceNodes);
 
-			long t_gbuilder = System.currentTimeMillis();
+//			long t_gbuilder = System.currentTimeMillis();
 			}
 			catch(IllegalArgumentException ex) {
 				throw new IllegalArgumentException("N=" + N + ", seed=" + seed + ", degree=" + degree +

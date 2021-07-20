@@ -8,7 +8,6 @@ import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.StmtIterator;
 import org.dice_research.ldcbench.util.uri.Constants;
 import org.dice_research.ldcbench.util.uri.CrawleableUri;
-import org.springframework.stereotype.Component;
 
 /**
  * The interface of a sink used by a worker. It has to be able to handle
@@ -18,7 +17,6 @@ import org.springframework.stereotype.Component;
  * @author Michael R&ouml;der (michael.roeder@uni-paderborn.de)
  *
  */
-@Component
 public interface Sink extends TripleBasedSink, UnstructuredDataSink, Closeable {
 
     public default void addMetaData(Model model) {

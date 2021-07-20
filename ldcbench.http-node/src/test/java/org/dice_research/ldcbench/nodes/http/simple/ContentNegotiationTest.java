@@ -14,7 +14,8 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 import org.simpleframework.http.Response;
-import org.springframework.http.MediaType;
+
+import com.google.common.net.MediaType;
 
 import junit.framework.Assert;
 
@@ -27,22 +28,22 @@ public class ContentNegotiationTest extends AbstractNegotiatingResource {
 
         // 1 type requested and matches exactly the 1 available type
         data.add(new Object[] { new String[] { "text/plain" }, new String[] { "text/plain" },
-                MediaType.parseMediaType("text/plain") });
+                MediaType.parse("text/plain") });
         // 1 type requested and matches the second available type
         data.add(new Object[] { new String[] { "text/plain", "application/rdf+xml" },
-                new String[] { "application/rdf+xml" }, MediaType.parseMediaType("application/rdf+xml") });
+                new String[] { "application/rdf+xml" }, MediaType.parse("application/rdf+xml") });
         // two types requested where the second matches the available type
         data.add(new Object[] { new String[] { "application/rdf+xml" },
                 new String[] { "text/plain", "application/rdf+xml" },
-                MediaType.parseMediaType("application/rdf+xml") });
+                MediaType.parse("application/rdf+xml") });
         // 1 type requested but does not match any available type
         data.add(new Object[] { new String[] { "application/rdf+xml" }, new String[] { "text/plain" }, null });
         // No type is requested --> select the first available type
         data.add(new Object[] { new String[] { "text/plain" }, new String[] {},
-                MediaType.parseMediaType("text/plain") });
+                MediaType.parse("text/plain") });
         // 3 types are requested with two of them having a wildcard part
         data.add(new Object[] { new String[] { "application/rdf+xml" }, new String[] { "text/plain", "text/*", "*/*" },
-                MediaType.parseMediaType("application/rdf+xml") });
+                MediaType.parse("application/rdf+xml") });
 
         // Check the process with the RDF languages of Jena (as requested types)
         Set<String> jenaContentTypes = new HashSet<String>();
@@ -54,7 +55,7 @@ public class ContentNegotiationTest extends AbstractNegotiatingResource {
         }
         data.add(new Object[] { new String[] { "application/rdf+xml" },
                 jenaContentTypes.toArray(new String[jenaContentTypes.size()]),
-                MediaType.parseMediaType("application/rdf+xml") });
+                MediaType.parse("application/rdf+xml") });
 
         return data;
     }

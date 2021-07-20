@@ -20,6 +20,7 @@ push-images:
 	docker push $(IMAGE_BASE)ldcbench.sparql-node
 	docker push $(IMAGE_BASE)ldcbench.rdfa-gen
 	docker push $(IMAGE_BASE)ldcbench.rdfa-node
+	docker push $(IMAGE_BASE)ldcbench.lemming
 
 add-hobbit-remote:
 	git remote |grep hobbit ||git remote --verbose add hobbit https://git.project-hobbit.eu/ldcbench/ldcbench

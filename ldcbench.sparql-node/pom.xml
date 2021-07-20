@@ -7,7 +7,7 @@
 	<parent>
 		<groupId>org.dice_research</groupId>
 		<artifactId>ldcbench.parent</artifactId>
-		<version>1.0.0</version>
+		<version>1.1.0</version>
 		<relativePath>../ldcbench.parent</relativePath>
 	</parent>
 	<artifactId>ldcbench.sparql-node</artifactId>
@@ -30,10 +30,6 @@
 			<url>https://repo.spring.io/libs-release</url>
 		</repository>
 	</repositories>
-
-	<properties>
-		<spring.version>5.1.4.RELEASE</spring.version>
-	</properties>
 
 
 	<dependencies>
@@ -131,20 +127,6 @@
 			<groupId>org.simpleframework</groupId>
 			<artifactId>simple</artifactId>
 		</dependency>
-		<!-- ~~~~~~~~~~~~~~~~~~~ Spring ~~~~~~~~~~~~~~~~~~~~~~ -->
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-core</artifactId>
-			<version>${spring.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-webmvc</artifactId>
-			<version>${spring.version}</version>
-		</dependency>
-		<!-- SPRING Test <dependency> <groupId>org.springframework</groupId> <artifactId>spring-test</artifactId> 
-			<version>${spring.version}</version> <scope>test</scope> </dependency> -->
-		<!-- ~~~~~~~~~~~~~~~~~~~ End Spring ~~~~~~~~~~~~~~~~~~~~~~ -->
 		<!-- ~~~~~~~~~~~~~~~~~~~ Logging ~~~~~~~~~~~~~~~~~~~~~~ -->
 		<!-- slf4j: Logging API -->
 		<dependency>

@@ -1,0 +1,2 @@
+<https://example.org/A> <https://example.org/p> <https://example.org/B>;
+                        <https://example.org/q> <https://example.org/C> .

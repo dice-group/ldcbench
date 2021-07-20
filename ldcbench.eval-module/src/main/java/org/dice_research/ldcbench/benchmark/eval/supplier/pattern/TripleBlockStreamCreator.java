@@ -8,7 +8,7 @@ import org.apache.jena.sparql.syntax.ElementTriplesBlock;
  * The interface of a class creating a stream of {@link ElementTriplesBlock}
  * instances used for checking a graph for its completeness. The class is based
  * on a graph representation that has been serialized in a file and is not
- * further defined. Therefore, it offers an {@link #accepts(Object)} method
+ * further defined. Therefore, it offers an {@link #accepts(int, String, String[], String[])} method
  * which should be used to determine whether the creator can use the given graph
  * representation to create the stream.
  * 

@@ -20,7 +20,7 @@ public class InMemoryKnownUriFilter implements KnownUriFilter {
      */
     protected Hashtable<CrawleableUri, UriInfo> uris;
     /**
-     * Indicates whether the {@link org.dice_research.squirrel.frontier.Frontier} using this filter does recrawling.
+     * Indicates whether the Frontier using this filter does recrawling.
      */
     private boolean frontierDoesRecrawling;
     protected long defaultRecrawlTime;

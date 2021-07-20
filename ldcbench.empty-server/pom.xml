@@ -7,7 +7,7 @@
 	<parent>
 		<groupId>org.dice_research</groupId>
 		<artifactId>ldcbench.parent</artifactId>
-		<version>1.0.0</version>
+		<version>1.1.0</version>
 		<relativePath>../ldcbench.parent</relativePath>
 	</parent>
 	<artifactId>ldcbench.empty-server</artifactId>
@@ -35,7 +35,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jar-plugin</artifactId>
-	<version>3.0.2</version>
+	<version>3.2.0</version>
         <configuration>
           <skipIfEmpty>true</skipIfEmpty>
         </configuration>

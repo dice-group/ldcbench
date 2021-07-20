@@ -1,16 +1,12 @@
 //package org.dice_research.ldcbench;
 package org.dice_research.ldcbench.generate;
 
+import static org.junit.Assert.assertEquals;
+
+import org.dice_research.ldcbench.graph.GrphBasedGraph;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import static org.junit.Assert.*;
-
-import java.util.Arrays;
-
-import org.dice_research.ldcbench.generate.RandomRDF;
-import org.dice_research.ldcbench.graph.GraphBuilder;
-import org.dice_research.ldcbench.graph.GrphBasedGraph;
 
 public class RandomRDFTest {
     int N;

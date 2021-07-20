@@ -10,9 +10,6 @@ import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.net.SocketException;
 import java.nio.ByteBuffer;
-import java.nio.charset.Charset;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -35,7 +32,6 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
@@ -58,6 +54,7 @@ import org.dice_research.ldcbench.benchmark.cloud.HttpDumpNodeManager;
 import org.dice_research.ldcbench.benchmark.cloud.NodeManager;
 import org.dice_research.ldcbench.benchmark.cloud.RDFaNodeManager;
 import org.dice_research.ldcbench.benchmark.cloud.SparqlNodeManager;
+import org.dice_research.ldcbench.benchmark.dns.EmptyDomainProvider;
 import org.dice_research.ldcbench.benchmark.node.NodeSizeDeterminer;
 import org.dice_research.ldcbench.benchmark.node.NodeSizeDeterminerFactory;
 import org.dice_research.ldcbench.data.NodeMetadata;
@@ -65,6 +62,7 @@ import org.dice_research.ldcbench.generate.SeedGenerator;
 import org.dice_research.ldcbench.generate.SequentialSeedGenerator;
 import org.dice_research.ldcbench.graph.Graph;
 import org.dice_research.ldcbench.rdf.SimpleTripleCreator;
+import org.dice_research.ldcbench.utils.CloseableHelper;
 import org.dice_research.ldcbench.vocab.LDCBench;
 import org.hobbit.core.Commands;
 import org.hobbit.core.Constants;
@@ -86,18 +84,12 @@ public class BenchmarkController extends AbstractBenchmarkController {
 
     public static final String DEFAULT_EVAL_STORAGE_IMAGE = AbstractBenchmarkController.DEFAULT_EVAL_STORAGE_IMAGE;
 
-    private Set<Future<String>> dataGenContainers = new HashSet<>();
+    protected Set<Future<String>> dataGenContainers = new HashSet<>();
     private List<Future<String>> nodeContainers = new ArrayList<>();
 
-    private Class<?>[] possibleNodeManagerClasses = {
-        DereferencingHttpNodeManager.class,
-        CkanNodeManager.class,
-        SparqlNodeManager.class,
-        HttpDumpNodeManager.class,
-        RDFaNodeManager.class,
-    };
+    private Class<?>[] possibleNodeManagerClasses = { DereferencingHttpNodeManager.class, CkanNodeManager.class,
+            SparqlNodeManager.class, HttpDumpNodeManager.class, RDFaNodeManager.class, };
 
-    private boolean sdk;
     private boolean dockerized;
     private int nodesAmount;
 
@@ -116,6 +108,8 @@ public class BenchmarkController extends AbstractBenchmarkController {
     private Semaphore nodesResultSemaphore = null;
     private Semaphore nodeGraphMutex = new Semaphore(0);
     private Semaphore evaluationStorageReady = new Semaphore(0);
+
+    protected boolean nodesShouldTerminate = false;
 
     protected Channel dataGeneratorsChannel;
 
@@ -136,12 +130,12 @@ public class BenchmarkController extends AbstractBenchmarkController {
         return java.util.UUID.randomUUID().toString();
     }
 
-    private void createDataGenerator(NodeManager nodeManager, String[] envVariables) {
+    protected void createDataGenerator(NodeManager nodeManager, String[] envVariables) {
         String variables[] = envVariables != null ? Arrays.copyOf(envVariables, envVariables.length + 1)
                 : new String[1];
         variables[variables.length - 1] = Constants.GENERATOR_ID_KEY + "=" + (dataGenContainers.size() + 1);
-        Future<String> container = createContainerAsync(nodeManager.getDataGeneratorImageName(), Constants.CONTAINER_TYPE_BENCHMARK,
-                variables);
+        Future<String> container = createContainerAsync(nodeManager.getDataGeneratorImageName(),
+                Constants.CONTAINER_TYPE_BENCHMARK, variables);
         dataGenContainers.add(container);
     }
 
@@ -208,7 +202,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
     public void init() throws Exception {
         super.init();
 
-        sdk = EnvVariables.getBoolean(ApiConstants.ENV_SDK_KEY, false, LOGGER);
+        boolean sdk = EnvVariables.getBoolean(ApiConstants.ENV_SDK_KEY, false, LOGGER);
         dockerized = EnvVariables.getBoolean(ApiConstants.ENV_DOCKERIZED_KEY, true, LOGGER);
 
         // Start SPARQL endpoint
@@ -220,12 +214,14 @@ public class BenchmarkController extends AbstractBenchmarkController {
         long seed = RdfHelper.getLiteral(benchmarkParamModel, null, LDCBench.seed).getLong();
         nodesAmount = RdfHelper.getLiteral(benchmarkParamModel, null, LDCBench.numberOfNodes).getInt();
         long averageCrawlDelay = RdfHelper.getLiteral(benchmarkParamModel, null, LDCBench.averageCrawlDelay).getLong();
-        double averageDisallowedRatio = RdfHelper.getLiteral(benchmarkParamModel, null, LDCBench.averageDisallowedRatio).getDouble();
+        double averageDisallowedRatio = RdfHelper.getLiteral(benchmarkParamModel, null, LDCBench.averageDisallowedRatio)
+                .getDouble();
         int averageNodeGraphDegree = RdfHelper.getLiteral(benchmarkParamModel, null, LDCBench.averageNodeGraphDegree)
                 .getInt();
         int averageRdfGraphDegree = RdfHelper.getLiteral(benchmarkParamModel, null, LDCBench.averageRdfGraphDegree)
                 .getInt();
-        double httpDumpNodeCompressedRatio = RdfHelper.getLiteral(benchmarkParamModel, null, LDCBench.httpDumpNodeCompressedRatio).getDouble();
+        double httpDumpNodeCompressedRatio = RdfHelper
+                .getLiteral(benchmarkParamModel, null, LDCBench.httpDumpNodeCompressedRatio).getDouble();
 
         /*
          * Determine the number of components which will make use of a random number
@@ -328,6 +324,10 @@ public class BenchmarkController extends AbstractBenchmarkController {
                 nodeManagers.add((AbstractNodeManager) nodeManagerClasses.get(i).newInstance());
             }
         }
+        if (nodeManagers.size() == 0) {
+            LOGGER.error("The experiment configuration does not define any nodes. Aborting.");
+            throw new IllegalStateException("The experiment configuration does not define any nodes.");
+        }
 
         nodeMetadata = new NodeMetadata[nodesAmount];
         int batchSize = dockerized ? 20 : 1;
@@ -336,21 +336,21 @@ public class BenchmarkController extends AbstractBenchmarkController {
                 LOGGER.info("Creating node {}...", i);
                 nodeStarted.add(new Semaphore(0));
 
-                envVariables = ArrayUtils.addAll(new String[] {
-                            Constants.BENCHMARK_PARAMETERS_MODEL_KEY + "=" + RabbitMQUtils.writeModel2String(benchmarkParamModel),
-                            ApiConstants.ENV_DOCKERIZED_KEY + "=" + dockerized,
-                            ApiConstants.ENV_SEED_KEY + "=" + seed,
-                            ApiConstants.ENV_NODE_ID_KEY + "=" + i,
-                            ApiConstants.ENV_NODE_URI_KEY + "=" + getNodeURI(i),
-                            ApiConstants.ENV_BENCHMARK_EXCHANGE_KEY + "=" + benchmarkExchange,
-                            ApiConstants.ENV_DATA_QUEUE_KEY + "=" + dataQueues[i],
-                            ApiConstants.ENV_CRAWL_DELAY_KEY + "=" + averageCrawlDelay,
-                            ApiConstants.ENV_DISALLOWED_RATIO_KEY + "=" + averageDisallowedRatio,
-                            ApiConstants.ENV_HTTP_PORT_KEY + "=" + (dockerized ? 80 : 30000 + i),
-                            ApiConstants.ENV_COMPONENT_COUNT_KEY + "=" + componentCount,
-                            ApiConstants.ENV_COMPONENT_ID_KEY + "=" + componentId++,
-                            ApiConstants.ENV_COMPRESSED_RATIO_KEY + "=" + httpDumpNodeCompressedRatio,
-                        },
+                envVariables = ArrayUtils.addAll(
+                        new String[] {
+                                Constants.BENCHMARK_PARAMETERS_MODEL_KEY + "="
+                                        + RabbitMQUtils.writeModel2String(benchmarkParamModel),
+                                ApiConstants.ENV_DOCKERIZED_KEY + "=" + dockerized,
+                                ApiConstants.ENV_SEED_KEY + "=" + seed, ApiConstants.ENV_NODE_ID_KEY + "=" + i,
+                                ApiConstants.ENV_NODE_URI_KEY + "=" + getNodeURI(i),
+                                ApiConstants.ENV_BENCHMARK_EXCHANGE_KEY + "=" + benchmarkExchange,
+                                ApiConstants.ENV_DATA_QUEUE_KEY + "=" + dataQueues[i],
+                                ApiConstants.ENV_CRAWL_DELAY_KEY + "=" + averageCrawlDelay,
+                                ApiConstants.ENV_DISALLOWED_RATIO_KEY + "=" + averageDisallowedRatio,
+                                ApiConstants.ENV_HTTP_PORT_KEY + "=" + (dockerized ? 80 : 30000 + i),
+                                ApiConstants.ENV_COMPONENT_COUNT_KEY + "=" + componentCount,
+                                ApiConstants.ENV_COMPONENT_ID_KEY + "=" + componentId++,
+                                ApiConstants.ENV_COMPRESSED_RATIO_KEY + "=" + httpDumpNodeCompressedRatio, },
                         nodeManagers.get(i).getNodeEnvironment());
 
                 nodeContainers.add(createContainerAsync(nodeManagers.get(i).getNodeImageName(),
@@ -372,7 +372,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
                         ApiConstants.ENV_EVAL_DATA_QUEUE_KEY + "=" + evalDataQueueName,
                         ApiConstants.ENV_SPARQL_ENDPOINT_KEY + "=" + sparqlUrl,
                         ApiConstants.ENV_COMPONENT_COUNT_KEY + "=" + componentCount,
-                        ApiConstants.ENV_COMPONENT_ID_KEY + "=" + componentId++,  });
+                        ApiConstants.ENV_COMPONENT_ID_KEY + "=" + componentId++, });
 
         LOGGER.debug("Waiting for all cloud nodes and evaluation module to initialize...");
         nodesInitSemaphore.acquire(nodesAmount + 1);
@@ -389,8 +389,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
         LOGGER.info("Creating node graph generator...");
         LOGGER.info("Type connectivity matrix: {}", Arrays.deepToString(getTypeConnectivity(nodeManagerClasses)));
         envVariables = new String[] { DataGenerator.ENV_TYPE_KEY + "=" + DataGenerator.Types.NODE_GRAPH_GENERATOR,
-                ApiConstants.ENV_SEED_KEY + "=" + seed,
-                DataGenerator.ENV_NUMBER_OF_NODES_KEY + "=" + nodesAmount,
+                ApiConstants.ENV_SEED_KEY + "=" + seed, DataGenerator.ENV_NUMBER_OF_NODES_KEY + "=" + nodesAmount,
                 DataGenerator.ENV_AVERAGE_DEGREE_KEY + "=" + averageNodeGraphDegree,
                 DataGenerator.ENV_DATAGENERATOR_EXCHANGE_KEY + "=" + dataGeneratorsExchange,
                 // DataGenerator.ENV_NODETYPES_KEY + "=" +
@@ -412,7 +411,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
         if (sdk) {
             Thread.sleep(2000);
         }
-        
+
         String accessUris[] = Arrays.stream(nodeMetadata).map(m -> m.getAccessUriTemplate()).toArray(String[]::new);
         String serializedAccessUris = Arrays.toString(accessUris);
         String resourceUris[] = Arrays.stream(nodeMetadata).map(m -> m.getResourceUriTemplate()).toArray(String[]::new);
@@ -426,16 +425,14 @@ public class BenchmarkController extends AbstractBenchmarkController {
                                                                                                                  // SDK
                                                                                                                  // workaround
                         Constants.GENERATOR_COUNT_KEY + "=" + nodesAmount,
-                        DataGenerator.ENV_TYPE_KEY + "=" +
-                        DataGenerator.Types.RDF_GRAPH_GENERATOR,
-                        ApiConstants.ENV_SEED_KEY + "=" + seed,
-                        DataGenerator.ENV_DATA_QUEUE_KEY + "=" + dataQueues[i],
+                        DataGenerator.ENV_TYPE_KEY + "=" + DataGenerator.Types.RDF_GRAPH_GENERATOR,
+                        ApiConstants.ENV_SEED_KEY + "=" + seed, DataGenerator.ENV_DATA_QUEUE_KEY + "=" + dataQueues[i],
                         ApiConstants.ENV_EVAL_DATA_QUEUE_KEY + "=" + evalDataQueueName,
                         DataGenerator.ENV_DATAGENERATOR_EXCHANGE_KEY + "=" + dataGeneratorsExchange,
                         ApiConstants.ENV_COMPONENT_COUNT_KEY + "=" + componentCount,
-                        ApiConstants.ENV_COMPONENT_ID_KEY + "=" + componentId++, 
+                        ApiConstants.ENV_COMPONENT_ID_KEY + "=" + componentId++,
                         DataGenerator.ENV_ACCESS_URI_TEMPLATES_KEY + "=" + serializedAccessUris,
-                        DataGenerator.ENV_RESOURCE_URI_TEMPLATES_KEY + "=" + serializedResourceUris,},
+                        DataGenerator.ENV_RESOURCE_URI_TEMPLATES_KEY + "=" + serializedResourceUris, },
                         nodeManagers.get(i).getDataGeneratorEnvironment(averageRdfGraphDegree,
                                 nodeSizeDeterminer.getNodeSize()));
                 createDataGenerator(nodeManagers.get(i), envVariables);
@@ -485,15 +482,14 @@ public class BenchmarkController extends AbstractBenchmarkController {
                 do {
                     try {
                         UpdateProcessor up = UpdateExecutionFactory.createRemoteForm(
-                            UpdateFactory.create("DELETE {GRAPH ?g {?s ?p ?o}} WHERE {GRAPH ?g {?s ?p ?o}}"),
-                            sparqlUrlAuth,
-                            httpClient
-                        );
+                                UpdateFactory.create("DELETE {GRAPH ?g {?s ?p ?o}} WHERE {GRAPH ?g {?s ?p ?o}}"),
+                                sparqlUrlAuth, httpClient);
                         up.execute();
                         success = true;
                     } catch (Exception e) {
                         if (e.getCause() instanceof SocketException) {
-                            LOGGER.info("Cannot connect to the evaluation storage {} to clean it up, will try again...", sparqlUrl);
+                            LOGGER.info("Cannot connect to the evaluation storage {} to clean it up, will try again...",
+                                    sparqlUrl);
                         } else {
                             LOGGER.info("Cannot clean up the evaluation storage {}, will try again...", sparqlUrl, e);
                         }
@@ -509,47 +505,14 @@ public class BenchmarkController extends AbstractBenchmarkController {
         }.start();
     }
 
-    protected void createEmptyServer() {
+    protected void createEmptyServer() throws IOException {
         LOGGER.info("Creating empty-server");
-        createContainer(EMPTY_SERVER_IMAGE_NAME, Constants.CONTAINER_TYPE_BENCHMARK, null,
-                new String[] {
-                    "creativecommons.org",
-                    "danbri.org",
-                    "digitalbazaar.com",
-                    "example.com",
-                    "example.net",
-                    "example.orb",
-                    "example.org",
-                    "freetime.example.org",
-                    "github.org",
-                    "greggkellogg.net",
-                    "internet",
-                    "kellogg",
-                    "openspring.net",
-                    "purl.org",
-                    "rdfa.info",
-                    "rdf.data",
-                    "rdfs.org",
-                    "schema.org",
-                    "vocab.org",
-                    "web.resource.org",
-                    "www.amazon.com",
-                    "www.blogger.com",
-                    "www.cwi.nl",
-                    "www.daml.org",
-                    "www.example.com",
-                    "www.example.org",
-                    "www.ivan",
-                    "www.ivan-herman.net",
-                    "www.leobard.net",
-                    "www.milowski.com",
-                    "www.openlinksw.com",
-                    "www-sop.inria.fr",
-                    "www.w2.org",
-                    "www.w3.org",
-                    "xmlns.com",
-                    "xmlns.openid.net",
-                });
+        try {
+            createContainer(EMPTY_SERVER_IMAGE_NAME, Constants.CONTAINER_TYPE_BENCHMARK, null,
+                    EmptyDomainProvider.loadEmptyDomains());
+        } catch (IOException e) {
+            throw new IOException("Encountered an error while creating an empty server.", e);
+        }
     }
 
     protected String getSeedForNode(int node) {
@@ -571,7 +534,8 @@ public class BenchmarkController extends AbstractBenchmarkController {
         seedNodes = new ArrayList<>();
         seedURIs = new ArrayList<>();
 
-        Literal allNodesInSeed = RdfHelper.getLiteral(benchmarkParamModel, null, benchmarkParamModel.getProperty(LDCBench.getURI() + "allNodesInSeed"));
+        Literal allNodesInSeed = RdfHelper.getLiteral(benchmarkParamModel, null,
+                benchmarkParamModel.getProperty(LDCBench.getURI() + "allNodesInSeed"));
         if (allNodesInSeed != null && allNodesInSeed.getBoolean()) {
             // For testing purposes, include all nodes in seed.
             for (int node = 0; node < g.getNumberOfNodes(); node++) {
@@ -650,6 +614,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
         // Create a model so we can store information about nodes.
         resultModel = ModelFactory.createDefaultModel();
         nodesResultSemaphore = new Semaphore(0);
+        nodesShouldTerminate = true;
         sendToCmdQueue(ApiConstants.CRAWLING_FINISHED_SIGNAL, RabbitMQUtils.writeLong(new Date().getTime()));
 
         nodesResultSemaphore.acquire(nodesAmount);
@@ -684,15 +649,18 @@ public class BenchmarkController extends AbstractBenchmarkController {
             Double crawlDelayFulfillment = null;
             Double minCrawlDelay = null;
             Double maxCrawlDelay = null;
-            String microAverageCrawlDelayFulfillmentString = RdfHelper.getStringValue(resultModel, nodeResource, LDCBench.microAverageCrawlDelayFulfillment);
+            String microAverageCrawlDelayFulfillmentString = RdfHelper.getStringValue(resultModel, nodeResource,
+                    LDCBench.microAverageCrawlDelayFulfillment);
             if (microAverageCrawlDelayFulfillmentString != null) {
                 crawlDelayFulfillment = Double.parseDouble(microAverageCrawlDelayFulfillmentString);
                 try {
-                    minCrawlDelay = Double.parseDouble(RdfHelper.getStringValue(resultModel, nodeResource, LDCBench.minCrawlDelay));
+                    minCrawlDelay = Double
+                            .parseDouble(RdfHelper.getStringValue(resultModel, nodeResource, LDCBench.minCrawlDelay));
                 } catch (NullPointerException e) {
                 }
                 try {
-                    maxCrawlDelay = Double.parseDouble(RdfHelper.getStringValue(resultModel, nodeResource, LDCBench.maxCrawlDelay));
+                    maxCrawlDelay = Double
+                            .parseDouble(RdfHelper.getStringValue(resultModel, nodeResource, LDCBench.maxCrawlDelay));
                 } catch (NullPointerException e) {
                 }
                 delayFulfillmentSum += crawlDelayFulfillment;
@@ -707,29 +675,29 @@ public class BenchmarkController extends AbstractBenchmarkController {
 
             long numberOfDisallowed = 0;
             double ratioReqDisallowed = 0;
-            String numberOfDisallowedString = RdfHelper.getStringValue(resultModel, nodeResource, LDCBench.numberOfDisallowedResources);
+            String numberOfDisallowedString = RdfHelper.getStringValue(resultModel, nodeResource,
+                    LDCBench.numberOfDisallowedResources);
             if (numberOfDisallowedString != null) {
                 numberOfDisallowed = Long.parseLong(numberOfDisallowedString);
                 disallowedTotal += numberOfDisallowed;
-                String ratioReqDisallowedString = RdfHelper.getStringValue(resultModel, nodeResource, LDCBench.ratioOfRequestedDisallowedResources);
+                String ratioReqDisallowedString = RdfHelper.getStringValue(resultModel, nodeResource,
+                        LDCBench.ratioOfRequestedDisallowedResources);
                 if (ratioReqDisallowedString != null) {
                     ratioReqDisallowed = Double.parseDouble(ratioReqDisallowedString);
                     disallowedRequested += numberOfDisallowed * ratioReqDisallowed;
                 }
             }
 
-            String tooltip = String.format("%d: %s\n"
-                    + "Ratio of requested disallowed: %.2f\nTotal disallowed: %d\n"
-                    + "Crawl delay fulfillment: %.2f\nMin crawl delay: %.2f\nMax crawl delay: %.2f",
-                    i, nodeMetadata[i].getContainer(),
-                    ratioReqDisallowed, numberOfDisallowed,
-                    crawlDelayFulfillment, minCrawlDelay, maxCrawlDelay);
+            String tooltip = String.format(
+                    "%d: %s\n" + "Ratio of requested disallowed: %.2f\nTotal disallowed: %d\n"
+                            + "Crawl delay fulfillment: %.2f\nMin crawl delay: %.2f\nMax crawl delay: %.2f",
+                    i, nodeMetadata[i].getContainer(), ratioReqDisallowed, numberOfDisallowed, crawlDelayFulfillment,
+                    minCrawlDelay, maxCrawlDelay);
             String fillColor = Double.isNaN(recall) ? ""
                     : "/" + colorScheme + "/" + String.valueOf((int) Math.floor(recall * 8) + 1);
             dotlangLines.add(String.format("%d [label=\"%s\n%s%s\", tooltip=\"%s\", fillcolor=\"%s\", style=filled]", i,
                     nodeManagers.get(i).getLabel(), Double.isNaN(recall) ? "&empty;" : String.format("%.2f", recall),
-                    ratioReqDisallowed > 0 ? "!" : "",
-                    tooltip, fillColor));
+                    ratioReqDisallowed > 0 ? "!" : "", tooltip, fillColor));
             resultModel.removeAll(nodeResource, null, null);
         }
 
@@ -739,17 +707,21 @@ public class BenchmarkController extends AbstractBenchmarkController {
 
         Resource experimentResource = resultModel.getResource(experimentUri);
         if (delaySupportingNodes != 0) {
-            resultModel.addLiteral(experimentResource, LDCBench.macroAverageCrawlDelayFulfillment, delayFulfillmentSum / delaySupportingNodes);
+            resultModel.addLiteral(experimentResource, LDCBench.macroAverageCrawlDelayFulfillment,
+                    delayFulfillmentSum / delaySupportingNodes);
         }
         if (minDelayFulfillment != null) {
-            resultModel.addLiteral(experimentResource, LDCBench.minAverageCrawlDelayFulfillment, (double)minDelayFulfillment);
+            resultModel.addLiteral(experimentResource, LDCBench.minAverageCrawlDelayFulfillment,
+                    (double) minDelayFulfillment);
         }
         if (maxDelayFulfillment != null) {
-            resultModel.addLiteral(experimentResource, LDCBench.maxAverageCrawlDelayFulfillment, (double)maxDelayFulfillment);
+            resultModel.addLiteral(experimentResource, LDCBench.maxAverageCrawlDelayFulfillment,
+                    (double) maxDelayFulfillment);
         }
         resultModel.addLiteral(experimentResource, LDCBench.numberOfDisallowedResources, disallowedTotal);
         if (disallowedTotal != 0) {
-            resultModel.addLiteral(experimentResource, LDCBench.ratioOfRequestedDisallowedResources, ((double)disallowedRequested) / disallowedTotal);
+            resultModel.addLiteral(experimentResource, LDCBench.ratioOfRequestedDisallowedResources,
+                    ((double) disallowedRequested) / disallowedTotal);
         }
         resultModel.add(resultModel.createLiteralStatement(experimentResource, LDCBench.graphVisualization, dotlang));
 
@@ -816,8 +788,10 @@ public class BenchmarkController extends AbstractBenchmarkController {
             if (nodeContainerMap.containsKey(containerName)) {
                 LOGGER.error("Node container {} terminated with exitCode={}.", containerName, exitCode);
                 nodeContainerMap.get(containerName).setTerminated(true);
-                // FIXME: only do this when container terminates unexpectedly
-                containerCrashed(containerName);
+                // In case a node terminates while the controller didn't expect it
+                if (!nodesShouldTerminate) {
+                    containerCrashed(containerName);
+                }
             }
             if (dataGenContainerIds.contains(containerName)) {
                 LOGGER.error("Data generator container {} terminated with exitCode={}.", containerName, exitCode);
@@ -830,6 +804,11 @@ public class BenchmarkController extends AbstractBenchmarkController {
                 LOGGER.error("Sparql container {} terminated with exitCode={}.", containerName, exitCode);
                 containerCrashed(containerName);
             }
+            break;
+        }
+        default: {
+            // nothing to do
+            break;
         }
         }
         super.receiveCommand(command, data);
@@ -839,8 +818,8 @@ public class BenchmarkController extends AbstractBenchmarkController {
     public void close() throws IOException {
         LOGGER.debug("BenchmarkController.close()");
         // Free the resources you requested here
-        IOUtils.closeQuietly(systemDataSender);
-        IOUtils.closeQuietly(systemTaskSender);
+        CloseableHelper.closeQuietly(systemDataSender);
+        CloseableHelper.closeQuietly(systemTaskSender);
         if (nodeMetadata != null) {
             for (int i = 0; i < nodeMetadata.length; ++i) {
                 if (!nodeMetadata[i].isTerminated()) {

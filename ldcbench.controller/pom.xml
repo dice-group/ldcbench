@@ -7,7 +7,7 @@
   <parent>
     <groupId>org.dice_research</groupId>
     <artifactId>ldcbench.parent</artifactId>
-    <version>1.0.0</version>
+    <version>1.1.0</version>
     <relativePath>../ldcbench.parent</relativePath>
   </parent>
   <artifactId>ldcbench.controller</artifactId>
@@ -23,50 +23,9 @@
       <artifactId>ldcbench.data-generator</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.dice_research</groupId>
-      <artifactId>ldcbench.eval-module</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.dice_research</groupId>
-      <artifactId>ldcbench.http-node</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.dice_research</groupId>
-      <artifactId>ldcbench.ckan-node</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.dice_research</groupId>
-      <artifactId>ldcbench.sparql-node</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.dice_research</groupId>
-      <artifactId>ldcbench.rdfa-node</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.dice_research</groupId>
-      <artifactId>ldcbench.rdfa-gen</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-math3</artifactId>
       <version>3.6.1</version>
-    </dependency>
-    <dependency>
-      <groupId>org.dice_research</groupId>
-      <artifactId>ldcbench.system</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>javax.ws.rs</groupId>
-      <artifactId>javax.ws.rs-api</artifactId>
-      <version>2.1.1</version>
-      <scope>test</scope>
     </dependency>
     <!-- HOBBIT core library -->
     <dependency>
@@ -109,26 +68,6 @@
       <artifactId>system-rules</artifactId>
       <scope>test</scope>
     </dependency>
-    <!-- snakeyaml -->
-    <dependency>
-      <groupId>org.yaml</groupId>
-      <artifactId>snakeyaml</artifactId>
-      <version>1.24</version>
-    </dependency>
-    <!-- HOBBIT SDK -->
-    <dependency>
-      <groupId>org.hobbit</groupId>
-      <artifactId>hobbit-java-sdk</artifactId>
-      <version>1.1.18-ldcbench-SNAPSHOT</version>
-      <scope>test</scope>
-    </dependency>
-    <!-- HOBBIT controller -->
-    <dependency>
-      <groupId>org.hobbit</groupId>
-      <artifactId>platform-controller</artifactId>
-      <version>2.0.5</version>
-      <scope>test</scope>
-    </dependency>
     <!-- ~~~~~~~~~~~~~~~~~~~ End Testing ~~~~~~~~~~~~~~~~~~~~~~ -->
   </dependencies>
 
@@ -137,98 +76,10 @@
     <plugins>
       <plugin>
         <artifactId>maven-dependency-plugin</artifactId>
-        <executions>
-          <execution>
-            <phase>package</phase>
-            <goals>
-              <goal>copy-dependencies</goal>
-            </goals>
-            <configuration>
-              <outputDirectory>${project.build.directory}/lib</outputDirectory>
-            </configuration>
-          </execution>
-        </executions>
       </plugin>
       <plugin>
         <groupId>com.spotify</groupId>
         <artifactId>dockerfile-maven-plugin</artifactId>
-        <executions>
-          <execution>
-            <goals>
-              <goal>build</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-      <!-- Shade plugin (still needed for tests) -->
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-shade-plugin</artifactId>
-        <version>2.4.3</version>
-        <executions>
-          <execution>
-            <phase>pre-integration-test</phase>
-            <goals>
-              <goal>shade</goal>
-            </goals>
-          </execution>
-        </executions>
-        <configuration>
-          <!-- Mark the shaded artifact instead of overwriting the original 
-            artifact. It should also neither be installed nor deployed together with 
-            other artifacts. -->
-          <finalName>${project.artifactId}-shaded</finalName>
-          <!-- filter all the META-INF files of other artifacts -->
-          <filters>
-            <filter>
-              <artifact>*:*</artifact>
-              <excludes>
-                <exclude>META-INF/*.SF</exclude>
-                <exclude>META-INF/*.DSA</exclude>
-                <exclude>META-INF/*.RSA</exclude>
-              </excludes>
-            </filter>
-          </filters>
-          <transformers>
-            <transformer
-              implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-              <manifestEntries>
-                <X-Compile-Source-JDK>${maven.compile.source}</X-Compile-Source-JDK>
-                <X-Compile-Target-JDK>${maven.compile.target}</X-Compile-Target-JDK>
-              </manifestEntries>
-            </transformer>
-            <transformer
-              implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
-          </transformers>
-        </configuration>
-      </plugin>
-      <!-- Surefire plugin mentioned here to make sure that the shade plugin is executed before the tests are started -->
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-surefire-plugin</artifactId>
-        <configuration>
-          <skip>${skipTestPhase}</skip>
-          <systemPropertyVariables>
-            <sdkJarFilePath>${project.build.directory}/${project.artifactId}-shaded.jar</sdkJarFilePath>
-          </systemPropertyVariables>
-        </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-failsafe-plugin</artifactId>
-        <configuration>
-          <systemPropertyVariables>
-            <sdkJarFilePath>${project.build.directory}/${project.artifactId}-shaded.jar</sdkJarFilePath>
-          </systemPropertyVariables>
-        </configuration>
-        <executions>
-          <execution>
-            <goals>
-              <goal>integration-test</goal>
-              <goal>verify</goal>
-            </goals>
-          </execution>
-        </executions>
       </plugin>
     </plugins>
   </build>

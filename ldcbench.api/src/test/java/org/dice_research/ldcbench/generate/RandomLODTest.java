@@ -1,12 +1,10 @@
 package org.dice_research.ldcbench.generate;
 
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
-import org.dice_research.ldcbench.generate.RandomCloudGraph;
 import org.dice_research.ldcbench.graph.GrphBasedGraph;
+import org.junit.Before;
+import org.junit.Test;
 public class RandomLODTest {
     int N=1069;
     RandomCloudGraph rg;

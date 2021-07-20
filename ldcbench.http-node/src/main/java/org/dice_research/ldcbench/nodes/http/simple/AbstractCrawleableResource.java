@@ -8,14 +8,15 @@ import org.apache.http.HttpHeaders;
 import org.simpleframework.http.Request;
 import org.simpleframework.http.Response;
 import org.simpleframework.http.Status;
-import org.springframework.http.MediaType;
+
+import com.google.common.net.MediaType;
 
 public abstract class AbstractCrawleableResource implements CrawleableResource {
 
     /**
      * If the default content type is not set, this content type is used.
      */
-    public static final String DEFAULT_CONTENT_TYPE = MediaType.APPLICATION_OCTET_STREAM_VALUE;
+    public static final String DEFAULT_CONTENT_TYPE = MediaType.OCTET_STREAM.toString();
 
     /**
      * A predicate deciding whether a given request is answered with this resources
@@ -101,7 +102,7 @@ public abstract class AbstractCrawleableResource implements CrawleableResource {
      *             if the given content type can not be parsed as media type.
      */
     public void setDefaultContentType(String defaultContentType) throws IllegalArgumentException {
-        setDefaultContentType(MediaType.parseMediaType(defaultContentType));
+        setDefaultContentType(MediaType.parse(defaultContentType));
     }
 
     /**

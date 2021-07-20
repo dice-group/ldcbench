@@ -6,7 +6,6 @@ import java.io.InputStream;
 
 import org.dice_research.ldcbench.util.uri.Constants;
 import org.dice_research.ldcbench.util.uri.CrawleableUri;
-import org.springframework.stereotype.Component;
 
 /**
  * A sink that can handle unstructured data.
@@ -14,7 +13,6 @@ import org.springframework.stereotype.Component;
  * @author Michael R&ouml;der (michael.roeder@uni-paderborn.de)
  *
  */
-@Component  
 public interface UnstructuredDataSink extends SinkBase {
 
     /**

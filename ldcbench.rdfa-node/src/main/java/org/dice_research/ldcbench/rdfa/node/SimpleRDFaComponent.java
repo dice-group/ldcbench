@@ -12,13 +12,13 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.io.IOUtils;
 import org.dice_research.ldcbench.ApiConstants;
 import org.dice_research.ldcbench.nodes.http.simple.CrawleableResourceContainer;
 import org.dice_research.ldcbench.nodes.http.simple.FileBasedResource;
 import org.dice_research.ldcbench.nodes.http.simple.SimpleHttpServerComponent;
 import org.dice_research.ldcbench.nodes.rabbit.DataHandler;
 import org.dice_research.ldcbench.rdfa.gen.RDFaDataGenerator;
+import org.dice_research.ldcbench.utils.CloseableHelper;
 import org.dice_research.ldcbench.utils.tar.FileHandler;
 import org.dice_research.ldcbench.utils.tar.SimpleWritingFileHandler;
 import org.dice_research.ldcbench.utils.tar.TarFileReader;
@@ -199,7 +199,7 @@ public class SimpleRDFaComponent extends SimpleHttpServerComponent {
 
     @Override
     public void close() throws IOException {
-        IOUtils.closeQuietly(connection);
+        CloseableHelper.closeQuietly(connection);
         try {
             if (server != null) {
                 server.stop();

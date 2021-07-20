@@ -1,11 +1,11 @@
 package org.dice_research.ldcbench.nodes.http.simple;
 
 import java.io.OutputStream;
-import java.util.function.Predicate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.function.Predicate;
 
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
@@ -24,7 +24,8 @@ import org.simpleframework.http.Response;
 import org.simpleframework.http.Status;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.MediaType;
+
+import com.google.common.net.MediaType;
 
 public class GraphBasedResource extends AbstractNegotiatingResource {
 
@@ -91,7 +92,7 @@ public class GraphBasedResource extends AbstractNegotiatingResource {
     protected boolean handleRequest(String target, MediaType responseType, Response response, OutputStream out) throws SimpleHttpException {
         Lang lang = RDFLanguages.contentTypeToLang(responseType.toString());
         if(lang == null) {
-            lang = RDFLanguages.contentTypeToLang(responseType.getType());
+            lang = RDFLanguages.contentTypeToLang(responseType.type());
         }
         if(lang == null) {
             LOGGER.error("Couldn't identify negotiated content type. This shouldn't happen!");

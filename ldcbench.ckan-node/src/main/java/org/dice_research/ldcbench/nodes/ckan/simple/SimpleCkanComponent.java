@@ -2,9 +2,8 @@ package org.dice_research.ldcbench.nodes.ckan.simple;
 
 import static org.hobbit.core.Constants.CONTAINER_TYPE_BENCHMARK;
 
-import java.io.InputStream;
 import java.io.IOException;
-import java.net.SocketException;
+import java.io.InputStream;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -12,12 +11,12 @@ import java.util.List;
 import java.util.Properties;
 import java.util.stream.Stream;
 
-import org.apache.commons.io.IOUtils;
 import org.dice_research.ldcbench.graph.Graph;
 import org.dice_research.ldcbench.nodes.ckan.Constants;
 import org.dice_research.ldcbench.nodes.ckan.dao.CkanDAO;
 import org.dice_research.ldcbench.nodes.components.NodeComponent;
 import org.dice_research.ldcbench.rdf.SimpleTripleCreator;
+import org.dice_research.ldcbench.utils.CloseableHelper;
 import org.hobbit.core.components.Component;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -78,11 +77,7 @@ public class SimpleCkanComponent extends NodeComponent implements Component {
                 DriverManager.getConnection(url, props);
                 break;
             } catch (SQLException e) {
-                if (e.getCause() instanceof SocketException) {
-                    LOGGER.info("Cannot connect to the database {}, will try again...", url);
-                } else {
-                    LOGGER.info("Cannot connect to the database {}, will try again...", url, e);
-                }
+                LOGGER.info("Cannot connect to the database {}, will try again...\nError: {}", url, e.getMessage());
                 Thread.sleep(5000);
             }
         }
@@ -91,15 +86,14 @@ public class SimpleCkanComponent extends NodeComponent implements Component {
 
     @Override
     public void initBeforeDataGeneration() throws Exception {
-        postGresContainer = createContainer(Constants.POSTGRES, CONTAINER_TYPE_BENCHMARK, new String[] {
-                "POSTGRES_USER=ckan" + POSTGRES_USER,
-                "POSTGRES_PASSWORD=" + POSTGRES_PASSWORD,
-                "POSTGRES_DB=" + POSTGRES_DB,
-                "PGDATA=/var/postgresql/data",
-                "HOBBIT_SDK_PUBLISH_PORTS=5432",
-        });
-        waitForSqlConnection("jdbc:postgresql://" + (dockerized ? postGresContainer : "localhost") + ":5432/" + POSTGRES_DB);
-        String sqlUrl = "postgresql://" + POSTGRES_USER + ":" + POSTGRES_PASSWORD + "@" + postGresContainer + ":5432/" + POSTGRES_DB;
+        postGresContainer = createContainer(Constants.POSTGRES, CONTAINER_TYPE_BENCHMARK,
+                new String[] { "POSTGRES_USER=ckan" + POSTGRES_USER, "POSTGRES_PASSWORD=" + POSTGRES_PASSWORD,
+                        "POSTGRES_DB=" + POSTGRES_DB, "PGDATA=/var/postgresql/data",
+                        "HOBBIT_SDK_PUBLISH_PORTS=5432", });
+        waitForSqlConnection(
+                "jdbc:postgresql://" + (dockerized ? postGresContainer : "localhost") + ":5432/" + POSTGRES_DB);
+        String sqlUrl = "postgresql://" + POSTGRES_USER + ":" + POSTGRES_PASSWORD + "@" + postGresContainer + ":5432/"
+                + POSTGRES_DB;
 
         solrContainer = createContainer(Constants.SOLR, CONTAINER_TYPE_BENCHMARK, null);
         redisContainer = createContainer(Constants.REDIS, CONTAINER_TYPE_BENCHMARK, null);
@@ -116,16 +110,12 @@ public class SimpleCkanComponent extends NodeComponent implements Component {
         }
 
         LOGGER.debug("Starting CKAN service: {}...", Constants.CKAN);
-        ckanContainer = createContainer(Constants.CKAN, CONTAINER_TYPE_BENCHMARK,
-                new String[] { "CKAN_SOLR_URL=http://" + solrContainer + ":8983/solr/ckan",
-                        "CKAN_SQLALCHEMY_URL=" + sqlUrl,
-                        "CKAN_REDIS_URL=redis://" + redisContainer + ":6379/0", "CKAN_SITE_URL=http://localhost",
-                        "CKAN_SITE_TITLE=CKAN NODE", "CKAN_SITE_DESCRIPTION=LDCBench Benchmark node",
-                        "CKAN_RECAPTCHA_PUBLICKEY=" + recaptchaPublicKey,
-                        "CKAN_RECAPTCHA_PRIVATEKEY=" + recaptchaPrivateKey,
-                        "REDIS_HOSTNAME=" + redisContainer,
-                        "HOBBIT_SDK_PUBLISH_PORTS=5000",
-        });
+        ckanContainer = createContainer(Constants.CKAN, CONTAINER_TYPE_BENCHMARK, new String[] {
+                "CKAN_SOLR_URL=http://" + solrContainer + ":8983/solr/ckan", "CKAN_SQLALCHEMY_URL=" + sqlUrl,
+                "CKAN_REDIS_URL=redis://" + redisContainer + ":6379/0", "CKAN_SITE_URL=http://localhost",
+                "CKAN_SITE_TITLE=CKAN NODE", "CKAN_SITE_DESCRIPTION=LDCBench Benchmark node",
+                "CKAN_RECAPTCHA_PUBLICKEY=" + recaptchaPublicKey, "CKAN_RECAPTCHA_PRIVATEKEY=" + recaptchaPrivateKey,
+                "REDIS_HOSTNAME=" + redisContainer, "HOBBIT_SDK_PUBLISH_PORTS=5000", });
 
         accessUriTemplate = "http://" + (dockerized ? ckanContainer : "localhost") + ":5000/";
         resourceUriTemplate = accessUriTemplate;
@@ -153,15 +143,13 @@ public class SimpleCkanComponent extends NodeComponent implements Component {
         CkanDataset insertedDataset = ckanDao.insertDataSource(dataset);
         LOGGER.info("Inserted CKAN dataset ID: {}", insertedDataset.getId());
         ckanDataSets.add(insertedDataset);
-        
+
     }
 
     private void addCloudNode(int node) throws Exception {
-        SimpleTripleCreator tripleCreator = new SimpleTripleCreator(
-            node,
-            Stream.of(nodeMetadata).map(nm -> nm.getResourceUriTemplate()).toArray(String[]::new),
-            Stream.of(nodeMetadata).map(nm -> nm.getAccessUriTemplate()).toArray(String[]::new)
-        );
+        SimpleTripleCreator tripleCreator = new SimpleTripleCreator(node,
+                Stream.of(nodeMetadata).map(nm -> nm.getResourceUriTemplate()).toArray(String[]::new),
+                Stream.of(nodeMetadata).map(nm -> nm.getAccessUriTemplate()).toArray(String[]::new));
 
         boolean success = false;
         while (!success) {
@@ -169,11 +157,11 @@ public class SimpleCkanComponent extends NodeComponent implements Component {
                 addDataSource(tripleCreator.createNode(0, -1, -2, false).toString());
                 success = true;
             } catch (CkanException ce) {
-                if (ce.getMessage().contains("Solr returned an error")) 
+                if (ce.getMessage().contains("Solr returned an error"))
                     LOGGER.info("Solr is not ready yet. Trying again in 5 seconds");
-                else 
+                else
                     LOGGER.info("Could not add Data set. Trying again in 5 seconds");
-                
+
                 Thread.sleep(5000);
 
             }
@@ -225,15 +213,15 @@ public class SimpleCkanComponent extends NodeComponent implements Component {
             LOGGER.debug("There is no Ckan to stop.");
         }
 
-        //delete all the datasets
+        // delete all the datasets
 
-        for(CkanDataset dataset: ckanDataSets) {
+        for (CkanDataset dataset : ckanDataSets) {
             ckanDao.deleteDataSource(dataset.getName());
         }
 
-        IOUtils.closeQuietly(receiver);
+        CloseableHelper.closeQuietly(receiver);
         if (bcBroadcastConsumer != null) {
-            //bcBroadcastConsumer.close();
+            // bcBroadcastConsumer.close();
         }
 
         super.close();

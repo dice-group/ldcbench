@@ -3,10 +3,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 
-import org.dice_research.ldcbench.generate.RandomRDF;
 import org.dice_research.ldcbench.graph.GrphBasedGraph;
 import org.junit.Ignore;
-import org.dice_research.ldcbench.generate.ParallelBarabasiRDF;
 
 @Ignore
 public class RandomG2File {

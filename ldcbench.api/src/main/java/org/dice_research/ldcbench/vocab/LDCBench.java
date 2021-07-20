@@ -11,23 +11,6 @@ public class LDCBench {
 
     protected static final String uri = "http://w3id.org/dice-research/orca/ontology#";
 
-    /**
-     * returns the URI for this schema
-     *
-     * @return the URI for this schema
-     */
-    public static String getURI() {
-        return uri;
-    }
-
-    protected static final Resource resource(String local) {
-        return ResourceFactory.createResource(uri + local);
-    }
-
-    protected static final Property property(String local) {
-        return ResourceFactory.createProperty(uri, local);
-    }
-
     public static final Resource ExponentialDistNodeSize = resource("ExponentialDistNodeSize");
     public static final Resource StaticNodeSize = resource("StaticNodeSize");
 
@@ -69,5 +52,25 @@ public class LDCBench {
     public static final Property maxCrawlDelay = property("maxCrawlDelay");
     public static final Property minAverageCrawlDelayFulfillment = property("minAverageCrawlDelayFulfillment");
     public static final Property maxAverageCrawlDelayFulfillment = property("maxAverageCrawlDelayFulfillment");
+    
+    public static final Property lemmingDataset = property("lemmingDataset");
+    public static final Property lemmingDatasetDirectory = property("datasetDirectory");
+
+    /**
+     * returns the URI for this schema
+     *
+     * @return the URI for this schema
+     */
+    public static String getURI() {
+        return uri;
+    }
+
+    protected static final Resource resource(String local) {
+        return ResourceFactory.createResource(uri + local);
+    }
+
+    protected static final Property property(String local) {
+        return ResourceFactory.createProperty(uri, local);
+    }
 
 }

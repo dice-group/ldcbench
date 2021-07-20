@@ -7,15 +7,11 @@
   <parent>
     <groupId>org.dice_research</groupId>
     <artifactId>ldcbench.parent</artifactId>
-    <version>1.0.0</version>
+    <version>1.1.0</version>
     <relativePath>../ldcbench.parent</relativePath>
   </parent>
   <artifactId>ldcbench.http-node</artifactId>
   <packaging>jar</packaging>
-
-  <properties>
-    <spring.version>5.1.4.RELEASE</spring.version>
-  </properties>
 
   <dependencies>
     <dependency>
@@ -26,6 +22,11 @@
       <groupId>org.dice_research</groupId>
       <artifactId>ldcbench.nodes</artifactId>
     </dependency>
+    <dependency>
+      <groupId>com.aayushatharva.brotli4j</groupId>
+      <artifactId>brotli4j</artifactId>
+      <version>1.4.2</version>
+    </dependency>
     <!-- HOBBIT core library -->
     <dependency>
       <groupId>org.hobbit</groupId>
@@ -35,21 +36,6 @@
       <groupId>org.simpleframework</groupId>
       <artifactId>simple</artifactId>
     </dependency>
-    <!-- ~~~~~~~~~~~~~~~~~~~ Spring ~~~~~~~~~~~~~~~~~~~~~~ -->
-    <dependency>
-      <groupId>org.springframework</groupId>
-      <artifactId>spring-core</artifactId>
-      <version>${spring.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework</groupId>
-      <artifactId>spring-webmvc</artifactId>
-      <version>${spring.version}</version>
-    </dependency>
-    <!-- SPRING Test <dependency> <groupId>org.springframework</groupId> 
-      <artifactId>spring-test</artifactId> <version>${spring.version}</version> 
-      <scope>test</scope> </dependency> -->
-    <!-- ~~~~~~~~~~~~~~~~~~~ End Spring ~~~~~~~~~~~~~~~~~~~~~~ -->
     <!-- ~~~~~~~~~~~~~~~~~~~ Logging ~~~~~~~~~~~~~~~~~~~~~~ -->
     <!-- slf4j: Logging API -->
     <dependency>

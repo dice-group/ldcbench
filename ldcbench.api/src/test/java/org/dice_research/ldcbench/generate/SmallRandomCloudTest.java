@@ -1,12 +1,8 @@
 package org.dice_research.ldcbench.generate;
 
-import org.junit.Before;
+import org.dice_research.ldcbench.graph.GrphBasedGraph;
 import org.junit.Ignore;
 import org.junit.Test;
-import static org.junit.Assert.*;
-
-import org.dice_research.ldcbench.generate.RandomCloudGraph;
-import org.dice_research.ldcbench.graph.GrphBasedGraph;
 
 public class SmallRandomCloudTest {
     @Test

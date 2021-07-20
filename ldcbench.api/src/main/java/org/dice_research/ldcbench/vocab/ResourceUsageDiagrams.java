@@ -1,6 +1,5 @@
 package org.dice_research.ldcbench.vocab;
 
-import java.net.URI;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
@@ -18,15 +17,15 @@ public class ResourceUsageDiagrams {
     protected static final String BASE_URI = "http://w3id.org/dice-research/orca/resource-usage-per-time#";
     protected static final String BASE_INSTANCE_URI = "http://w3id.org/dice-research/orca/resource-usage-per-time/instance#";
 
-    protected static final Property property(String local) {
-        return ResourceFactory.createProperty(BASE_URI, local);
-    }
-
     // Properties sorted alphabetically
     public static final Property time = property("time");
     public static final Property totalCpuUsage = property("totalCpuUsage");
     public static final Property totalDiskUsage = property("totalDiskUsage");
     public static final Property totalMemoryUsage = property("totalMemoryUsage");
+
+    protected static final Property property(String local) {
+        return ResourceFactory.createProperty(BASE_URI, local);
+    }
 
     protected static final void addMeasure(Model model, String datasetUri, Resource dataStructureDefinition, Property measure, String label, String comment, Resource range) {
         Resource measureNode = model.createResource(datasetUri + "-measure-component-" + measure.getLocalName());

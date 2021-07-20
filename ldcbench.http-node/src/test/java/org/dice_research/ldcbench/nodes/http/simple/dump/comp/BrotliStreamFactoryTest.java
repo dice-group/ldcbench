@@ -6,24 +6,18 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Arrays;
-import java.util.zip.ZipInputStream;
-
 import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class ZipStreamFactoryTest {
+import com.aayushatharva.brotli4j.decoder.BrotliInputStream;
 
+public class BrotliStreamFactoryTest {
     protected static final int DATA_SIZE = 1000;
-    protected static final String COMPRESSED_FILE_NAME = "data.dat";
-
-    protected String compressionClassName;
-    protected String decompressionClassName;
 
     @Test
     public void test() throws IOException {
-        ZipStreamFactory factory = new ZipStreamFactory();
-        factory.setCompressedFileName(COMPRESSED_FILE_NAME);
+        BrotliStreamFactory factory = new BrotliStreamFactory();
         byte[] data = ReflectionBasedStreamFactoryTest.generateData();
 
         // Compress the data
@@ -46,8 +40,7 @@ public class ZipStreamFactoryTest {
     }
 
     public static InputStream generateInputStream(InputStream is) throws IOException {
-        ZipInputStream zipIn = new ZipInputStream(is);
-        zipIn.getNextEntry();
-        return zipIn;
+        BrotliInputStream brIn = new BrotliInputStream(is);
+        return brIn;
     }
 }

@@ -21,6 +21,7 @@ public class ObjectStreamFanoutExchangeConsumer<T> extends FanoutExchangeConsume
         super(queueFactory, exchangeName);
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public final void handle(byte[] body) {
         try (ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(body))) {

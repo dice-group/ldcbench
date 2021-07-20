@@ -5,7 +5,7 @@
   <parent>
     <groupId>org.dice_research</groupId>
     <artifactId>ldcbench</artifactId>
-    <version>1.0.0</version>
+    <version>1.1.0</version>
     <relativePath>..</relativePath>
   </parent>
   <artifactId>ldcbench.parent</artifactId>
@@ -14,11 +14,12 @@
   <!-- PROPERTIES -->
   <properties>
     <java.version>1.8</java.version>
-    <slf4j.version>1.7.10</slf4j.version>
-    <junit.version>4.12</junit.version>
+    <slf4j.version>1.7.30</slf4j.version>
+    <junit.version>4.13.2</junit.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <!-- The versions of jena and the sparql-api have to fit to each other -->
-    <jena.version>3.6.0</jena.version><!-- should be increased, e.g., to 3.12.0 -->
+    <jena.version>3.6.0</jena.version><!-- should be increased, e.g., to 
+      3.12.0 -->
     <jena-sparql-api.version>${jena.version}-1</jena-sparql-api.version>
   </properties>
 
@@ -89,6 +90,11 @@
       </dependency>
       <dependency>
         <groupId>org.dice_research</groupId>
+        <artifactId>ldcbench.controller</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.dice_research</groupId>
         <artifactId>ldcbench.sparql-node</artifactId>
         <version>${project.version}</version>
       </dependency>
@@ -105,6 +111,16 @@
       <dependency>
         <groupId>org.dice_research</groupId>
         <artifactId>ldcbench.rdfa-node</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.dice_research</groupId>
+        <artifactId>ldcbench.lemming</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.dice_research</groupId>
+        <artifactId>ldcbench.integration-test</artifactId>
         <version>${project.version}</version>
       </dependency>
       <!-- ~~~~~~~~~~~~~~~~~~~ End LDCBench modules ~~~~~~~~~~~~~~~~~~~~~~ -->
@@ -139,7 +155,7 @@
       <dependency>
         <groupId>com.google.guava</groupId>
         <artifactId>guava</artifactId>
-        <version>28.2-jre</version>
+        <version>30.1.1-jre</version>
       </dependency>
       <!-- Simple HTTP framework -->
       <dependency>
@@ -183,19 +199,19 @@
       <dependency>
         <groupId>commons-io</groupId>
         <artifactId>commons-io</artifactId>
-        <version>2.4</version>
+        <version>2.8.0</version>
       </dependency>
       <!-- Apache Commons Collections -->
       <dependency>
         <groupId>commons-collections</groupId>
         <artifactId>commons-collections</artifactId>
-        <version>3.2.1</version>
+        <version>3.2.2</version>
       </dependency>
       <!-- Apache Commons Lang 3 -->
       <dependency>
         <groupId>org.apache.commons</groupId>
         <artifactId>commons-lang3</artifactId>
-        <version>3.3.2</version>
+        <version>3.12.0</version>
       </dependency>
       <!-- Apache Commons Compress -->
       <dependency>
@@ -212,83 +228,114 @@
       <!-- Compiler plugin -->
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.8.0</version>
-        <configuration>
-          <source>${java.version}</source>
-          <target>${java.version}</target>
-        </configuration>
       </plugin>
       <!-- Source plugin for creating source file jar -->
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-source-plugin</artifactId>
-        <version>2.4</version>
-        <executions>
-          <execution>
-            <id>attach-sources-package</id>
-            <phase>package</phase>
-            <goals>
-              <goal>jar</goal>
-            </goals>
-          </execution>
-          <execution>
-            <id>attach-sources-deploy</id>
-            <phase>deploy</phase>
-            <goals>
-              <goal>jar-no-fork</goal>
-            </goals>
-          </execution>
-        </executions>
       </plugin>
       <!-- Javadoc plugin for generating documentation -->
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-javadoc-plugin</artifactId>
-        <version>2.10.1</version>
-        <configuration>
-          <show>private</show>
-          <nohelp>true</nohelp>
-          <failOnError>false</failOnError>
-        </configuration>
-        <executions>
-          <execution>
-            <phase>package</phase>
-            <goals>
-              <goal>jar</goal>
-            </goals>
-          </execution>
-        </executions>
       </plugin>
       <!-- Resources management plugin -->
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-resources-plugin</artifactId>
-        <version>3.1.0</version>
-        <configuration>
-          <encoding>UTF-8</encoding>
-        </configuration>
       </plugin>
     </plugins>
+
     <!-- Configure plugins even if they might not be used by all child projects -->
     <pluginManagement>
       <plugins>
+        <!-- Compiler plugin -->
+        <plugin>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <version>3.8.1</version>
+          <configuration>
+            <source>${java.version}</source>
+            <target>${java.version}</target>
+          </configuration>
+        </plugin>
+        <!-- Source plugin for creating source file jar -->
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-source-plugin</artifactId>
+          <version>3.2.1</version>
+          <executions>
+            <execution>
+              <id>attach-sources-package</id>
+              <phase>package</phase>
+              <goals>
+                <goal>jar</goal>
+              </goals>
+            </execution>
+            <execution>
+              <id>attach-sources-deploy</id>
+              <phase>deploy</phase>
+              <goals>
+                <goal>jar-no-fork</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
+        <!-- Javadoc plugin for generating documentation -->
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-javadoc-plugin</artifactId>
+          <version>3.2.0</version>
+          <configuration>
+            <source>8</source>
+            <show>private</show>
+            <nohelp>true</nohelp>
+            <failOnError>false</failOnError>
+            <failOnWarnings>false</failOnWarnings>
+          </configuration>
+          <executions>
+            <execution>
+              <phase>package</phase>
+              <goals>
+                <goal>jar</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
+        <!-- Resources management plugin -->
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-resources-plugin</artifactId>
+          <version>3.2.0</version>
+          <configuration>
+            <encoding>UTF-8</encoding>
+          </configuration>
+        </plugin>
         <!-- Plugin for creating Docker images -->
         <plugin>
           <groupId>com.spotify</groupId>
           <artifactId>dockerfile-maven-plugin</artifactId>
-          <version>1.4.10</version>
+          <version>1.4.13</version>
+          <executions>
+            <execution>
+              <id>default</id>
+              <goals>
+                <goal>build</goal>
+                <goal>push</goal>
+              </goals>
+            </execution>
+          </executions>
           <configuration>
             <repository>git.project-hobbit.eu:4567/ldcbench/ldcbench/${project.artifactId}</repository>
-            <!-- <tag>${project.version}</tag> -->
+            <tag>${project.version}</tag>
+            <buildArgs>
+              <JAR_FILE>${project.build.finalName}.jar</JAR_FILE>
+            </buildArgs>
           </configuration>
         </plugin>
         <!-- Plugin for copying dependencies -->
         <plugin>
           <artifactId>maven-dependency-plugin</artifactId>
-          <version>3.1.1</version>
+          <version>3.1.2</version>
           <executions>
             <execution>
-              <phase>install</phase>
+              <phase>prepare-package</phase>
               <goals>
                 <goal>copy-dependencies</goal>
               </goals>
@@ -306,15 +353,15 @@
         </plugin>
         <plugin>
           <artifactId>maven-failsafe-plugin</artifactId>
-          <version>2.22.1</version>
+          <version>2.22.2</version>
         </plugin>
         <plugin>
           <artifactId>maven-surefire-plugin</artifactId>
-          <version>2.22.1</version>
+          <version>2.22.2</version>
         </plugin>
         <plugin>
           <artifactId>maven-jar-plugin</artifactId>
-          <version>3.0.2</version>
+          <version>3.2.0</version>
         </plugin>
         <plugin>
           <artifactId>maven-install-plugin</artifactId>

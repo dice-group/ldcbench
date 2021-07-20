@@ -57,6 +57,59 @@
     :runtime;
   hobbit:hasAPI <https://github.com/dice-group/ldcbench#Api> .
 
+:ORCALemming a hobbit:Benchmark;
+  rdfs:label "ORCA (Lemming)"@en;
+  rdfs:comment "Benchmark for Data Web Crawlers with pre-generated Lemming datasets"@en;
+  hobbit:imageName "git.project-hobbit.eu:4567/ldcbench/ldcbench/ldcbench.lemming";
+  hobbit:usesImage
+    "git.project-hobbit.eu:4567/ldcbench/ldcbench/ldcbench.ckan-node",
+    "git.project-hobbit.eu:4567/ldcbench/ldcbench/ldcbench.empty-server",
+    "git.project-hobbit.eu:4567/ldcbench/ldcbench/ldcbench.eval-module",
+    "git.project-hobbit.eu:4567/ldcbench/ldcbench/ldcbench.http-node",
+    "git.project-hobbit.eu:4567/ldcbench/ldcbench/ldcbench.rdfa-gen",
+    "git.project-hobbit.eu:4567/ldcbench/ldcbench/ldcbench.rdfa-node",
+    "git.project-hobbit.eu:4567/ldcbench/ldcbench/ldcbench.sparql-node",
+    "git.project-hobbit.eu:4567/ldcbench/ldcbench/ldcbench.system";
+  hobbit:version "v1.1"@en;
+  hobbit:hasParameter
+    :seed,
+    :numberOfNodes,
+    :averageTriplesPerNode,
+    :averageNodeGraphDegree,
+    :averageRdfGraphDegree,
+    :averageCrawlDelay,
+    :averageDisallowedRatio,
+    :dereferencingHttpNodeWeight,
+    :ckanNodeWeight,
+    :sparqlNodeWeight,
+    :rdfaNodeWeight,
+    :httpDumpNodeWeight,
+    :httpDumpNodeCompressedRatio,
+    :useTurtleDumps,
+    :useN3Dumps,
+    :useRdfXmlDumps,
+    :useNtDumps,
+    :graphVisualization,
+    :triplesEvaluated,
+    :numberOfDisallowedResources,
+    :nodeSizeDeterminer,
+    :dataset;
+  hobbit:measuresKPI
+    :tripleCountOverTime,
+    :resourceUsageOverTime,
+    :truePositives,
+    :macroRecall,
+    :microRecall,
+    :macroAverageCrawlDelayFulfillment,
+    :minAverageCrawlDelayFulfillment,
+    :maxAverageCrawlDelayFulfillment,
+    :ratioOfRequestedDisallowedResources,
+    :totalCpuUsage,
+    :averageDiskUsage,
+    :averageMemoryUsage,
+    :runtime;
+  hobbit:hasAPI <https://github.com/dice-group/ldcbench#Api> .
+
 <https://github.com/dice-group/ldcbench#Api> a hobbit:API .
 
 
@@ -213,6 +266,20 @@
 :ExponentialDistNodeSize a :NodeSizeDeterminer;
 	rdfs:label "Exponential distribution-based"@en;
 	rdfs:comment "The distribution of node sizes will follow an exponential distribution."@en .
+
+:LemmingDataset a rdfs:Class .
+
+:LemmingSWDFDataset a :LemmingDataset;
+	:lemmingDatasetDirectory "lemming/swdf";
+	rdfs:label "Semantic Web Dog Food"@en;
+	rdfs:comment "Datasets generated based on the Semantic Web Dog Food."@en .
+
+:dataset a hobbit:Parameter, hobbit:ConfigurableParameter;
+  rdfs:label "Dataset"@en;
+  rdfs:comment "The name of the Lemming dataset that is used."@en;
+  rdfs:domain hobbit:Experiment, hobbit:Challenge;
+  rdfs:range :LemmingDataset;
+  hobbit:defaultValue :LemmingSWDFDataset .
 
 :truePositives a hobbit:KPI ;
   rdfs:label "True positives"@en;

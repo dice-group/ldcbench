@@ -107,8 +107,8 @@ public class ParallelBarabasiRDF implements GraphGenerator{
 			 }
 		}
 		int indexToEdgeList ;// index to edge list
-		long t0 = System.currentTimeMillis();
-		long ti0 = System.currentTimeMillis();
+//		long t0 = System.currentTimeMillis();
+//		long ti0 = System.currentTimeMillis();
 
 		int nE=(int) Math.ceil(N*degree);
 		int[] subj = new int[nE];
@@ -125,11 +125,11 @@ public class ParallelBarabasiRDF implements GraphGenerator{
 		if (P1<=m ) P1 = m + 1;
 
 		double biasedCoin=((m/2.0-1)/(m-1));
-		long ts10k = 0;
+//		long ts10k = 0;
 		int cntE=indexToEdgeList;
 		List<Connections> clist;
 		for (int i = m + 1; i <= N; i+=nCores) {//index to node
-			long ts1=System.currentTimeMillis();
+//			long ts1=System.currentTimeMillis();
 
 			int m1= 1+ generator.nextInt(2*m);// to use uniform distribution from 1 to 2m
 			if(m1 >= i) m1=i-1;
@@ -140,7 +140,7 @@ public class ParallelBarabasiRDF implements GraphGenerator{
 	        .mapToObj(a -> new Connections(a,weightedSampleWithoutReplacement(a - 1, m2, inDeg,generator)))
 	        		.collect(Collectors.toList());
 
-			ts10k += (System.currentTimeMillis()-ts1);
+//			ts10k += (System.currentTimeMillis()-ts1);
 			/*
 			 * 8/2/2019: choose randomly the number of in-links [1,m],
 			 * 	 1. select randomly one link to be in-link then
@@ -177,18 +177,18 @@ public class ParallelBarabasiRDF implements GraphGenerator{
 					m = m + 1;//second part
 				}
 
-				if (node % 10000 == 0) {
-					long ti1;
-					ti1= System.currentTimeMillis();
-					ts10k=0;
-					ti0= System.currentTimeMillis();
-				}
+//				if (node % 10000 == 0) {
+//					long ti1;
+//					ti1= System.currentTimeMillis();
+//					ts10k=0;
+//					ti0= System.currentTimeMillis();
+//				}
 				if(indexToEdgeList >= nE) break;
 			}
 			if(indexToEdgeList >= nE) break;
 		}
 
-		long t_barabasi = System.currentTimeMillis();
+//		long t_barabasi = System.currentTimeMillis();
 
 		//Grph structure ----------------------------------------------
 		int nEdges = indexToEdgeList;
@@ -201,7 +201,7 @@ public class ParallelBarabasiRDF implements GraphGenerator{
 		int[] entranceNodes= {0};
 		builder.setEntranceNodes(entranceNodes);
 
-		long t_gbuilder = System.currentTimeMillis();
+//		long t_gbuilder = System.currentTimeMillis();
 	}
 
 	//-------------------------------------------------------------------------------------------

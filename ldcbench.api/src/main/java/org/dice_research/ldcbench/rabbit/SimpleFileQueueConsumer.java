@@ -1,16 +1,12 @@
 package org.dice_research.ldcbench.rabbit;
 
-import java.nio.file.Files;
-import java.io.File;
-import org.hobbit.core.rabbit.SimpleFileReceiver;
-import com.rabbitmq.client.AMQP;
-import com.rabbitmq.client.Channel;
-import com.rabbitmq.client.Consumer;
-import com.rabbitmq.client.DefaultConsumer;
-import com.rabbitmq.client.Envelope;
 import java.io.Closeable;
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+
 import org.hobbit.core.rabbit.RabbitQueueFactory;
+import org.hobbit.core.rabbit.SimpleFileReceiver;
 
 /**
  * This class implements receiving SimpleFile-s coming through a queue.

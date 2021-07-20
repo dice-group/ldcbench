@@ -5,8 +5,8 @@ package org.dice_research.ldcbench.generate;
  * seed.
  * 
  * <p>
- * Following the arguments in
- * {@link https://www.johndcook.com/blog/2016/01/29/random-number-generator-seed-mistakes/}
+ * Following the arguments in <a href=
+ * "https://www.johndcook.com/blog/2016/01/29/random-number-generator-seed-mistakes/">https://www.johndcook.com/blog/2016/01/29/random-number-generator-seed-mistakes/</a>
  * this class is simply generating a sequence of numbers that are not
  * independent of each other but make sure that the same numbers are not used
  * too often.
@@ -34,8 +34,7 @@ public class SequentialSeedGenerator implements SeedGenerator {
     /**
      * Constructor if only a single instance is used.
      *
-     * @param seed
-     *            the original seed.
+     * @param seed the original seed.
      */
     public SequentialSeedGenerator(long seed) {
         this(seed, 0, 1);
@@ -44,12 +43,9 @@ public class SequentialSeedGenerator implements SeedGenerator {
     /**
      * Constructor which should be used if multiple generators are used in parallel.
      *
-     * @param seed
-     *            the single original seed
-     * @param generatorId
-     *            id of this generator (< generatorCount)
-     * @param generatorCount
-     *            number of generators used in parallel
+     * @param seed           the single original seed
+     * @param generatorId    id of this generator (&lt; generatorCount)
+     * @param generatorCount number of generators used in parallel
      */
     public SequentialSeedGenerator(long seed, int generatorId, int generatorCount) {
         this.stepSize = generatorCount;

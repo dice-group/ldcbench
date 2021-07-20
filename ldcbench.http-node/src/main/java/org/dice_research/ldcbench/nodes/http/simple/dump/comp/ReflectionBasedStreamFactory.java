@@ -34,7 +34,7 @@ public class ReflectionBasedStreamFactory implements CompressionStreamFactory {
     /**
      * Constructor.
      * 
-     * @param compressionClass
+     * @param compressionConstructor
      *            the constructor of the class implementing the compression.
      *            <b>Note</b> that it will be assumed that the constructor takes a
      *            single {@link OutputStream} as only argument.

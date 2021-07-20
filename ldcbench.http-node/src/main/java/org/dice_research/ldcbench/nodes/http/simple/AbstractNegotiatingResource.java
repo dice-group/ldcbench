@@ -9,7 +9,8 @@ import java.util.stream.Collectors;
 import org.simpleframework.http.Request;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.MediaType;
+
+import com.google.common.net.MediaType;
 
 public abstract class AbstractNegotiatingResource extends AbstractCrawleableResource {
 
@@ -19,14 +20,14 @@ public abstract class AbstractNegotiatingResource extends AbstractCrawleableReso
 
     public AbstractNegotiatingResource(Predicate<Request> predicate, String[] contentTypes) {
         super(predicate);
-        this.availableContentTypes = Arrays.stream(contentTypes).map(c -> MediaType.parseMediaType(c))
+        this.availableContentTypes = Arrays.stream(contentTypes).map(c -> MediaType.parse(c))
                 .collect(Collectors.toSet());
     }
 
     protected MediaType getResponseType(Iterator<String> iterator) {
         // If the request header is empty
-        if(!iterator.hasNext()) {
-            if(availableContentTypes.size() > 0) {
+        if (!iterator.hasNext()) {
+            if (availableContentTypes.size() > 0) {
                 return availableContentTypes.stream().findFirst().get();
             } else {
                 return null;
@@ -37,9 +38,13 @@ public abstract class AbstractNegotiatingResource extends AbstractCrawleableReso
         while (iterator.hasNext()) {
             typeString = iterator.next();
             try {
-                requestedType = MediaType.parseMediaType(typeString);
+                // A single star is not allowed in the MediaType class that we use
+                if ("*".equals(typeString)) {
+                    typeString = "*/*";
+                }
+                requestedType = MediaType.parse(typeString);
                 for (MediaType availableType : availableContentTypes) {
-                    if (requestedType.includes(availableType)) {
+                    if (availableType.is(requestedType)) {
                         return availableType;
                     }
                 }

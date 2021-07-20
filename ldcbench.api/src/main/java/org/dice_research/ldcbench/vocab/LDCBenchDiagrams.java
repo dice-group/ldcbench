@@ -17,13 +17,13 @@ public class LDCBenchDiagrams {
     protected static final String TRIPLES_PER_TIME_URI = "http://w3id.org/dice-research/orca/triples-per-time#";
     protected static final String TRIPLES_PER_TIME_INSTANCE_URI = "http://w3id.org/dice-research/orca/triples-per-time/instance#";
 
-    protected static final Property property(String local) {
-        return ResourceFactory.createProperty(TRIPLES_PER_TIME_URI, local);
-    }
-
     // Properties sorted alphabetically
     public static final Property time = property("time");
     public static final Property triples = property("triples");
+
+    protected static final Property property(String local) {
+        return ResourceFactory.createProperty(TRIPLES_PER_TIME_URI, local);
+    }
 
     public static Resource createDataset(Model model, String identifier) {
         String datasetUri = TRIPLES_PER_TIME_INSTANCE_URI + identifier;

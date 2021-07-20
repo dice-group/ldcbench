@@ -3,11 +3,13 @@ package org.dice_research.ldcbench.nodes.http.simple;
 import java.io.OutputStream;
 import java.util.HashSet;
 import java.util.Set;
+
 import org.simpleframework.http.Response;
 import org.simpleframework.http.Status;
-import org.springframework.http.MediaType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.net.MediaType;
 
 /**
  * Detects when a disallowed path (from a provided set) is requested.

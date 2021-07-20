@@ -12,9 +12,9 @@ import java.util.zip.GZIPInputStream;
 
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
-import org.apache.commons.compress.utils.IOUtils;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
+import org.dice_research.ldcbench.utils.CloseableHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -80,7 +80,7 @@ public class TarGZBasedTTLModelIterator implements Iterator<Model>, AutoCloseabl
 
     @Override
     public void close() {
-        IOUtils.closeQuietly(tarStream);
+        CloseableHelper.closeQuietly(tarStream);
     }
 
     public static TarGZBasedTTLModelIterator create(File f) throws FileNotFoundException, IOException {

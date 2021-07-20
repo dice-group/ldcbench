@@ -76,8 +76,8 @@ public class RandomCloudGraph implements GraphGenerator {
         }
 
         int indexToEdgeList;// index to edge list
-        long t0 = System.currentTimeMillis();
-        long ti0 = System.currentTimeMillis();
+//        long t0 = System.currentTimeMillis();
+//        long ti0 = System.currentTimeMillis();
 
         int nE = (int) Math.ceil(N * degree / 2);
         int[] subj = new int[nE];
@@ -257,11 +257,11 @@ public class RandomCloudGraph implements GraphGenerator {
 
                 // The dataset currently contains 1,239 datasets with 16,147 links (as of March
                 // 2019): d~=15
-                if (node % 10000 == 0) {
-                    long ti1;
-                    ti1 = System.currentTimeMillis();
-                    ti0 = System.currentTimeMillis();
-                }
+//                if (node % 10000 == 0) {
+//                    long ti1;
+//                    ti1 = System.currentTimeMillis();
+//                    ti0 = System.currentTimeMillis();
+//                }
                 if (indexToEdgeList >= nE)
                     break;
                 node++;

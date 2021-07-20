@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/dice-group/orca.svg?branch=master)](https://travis-ci.org/dice-group/orca)
+[![Java CI with Maven](https://github.com/dice-group/orca/actions/workflows/maven.yml/badge.svg)](https://github.com/dice-group/orca/actions/workflows/maven.yml)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/6030450cade64e259f69dddbd4a17c14)](https://www.codacy.com/app/MichaelRoeder/ldcbench)
 
 <img src="orca.png" alt="" height="215">
